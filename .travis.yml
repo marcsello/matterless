@@ -23,7 +23,6 @@ sudo: required
 
 before_install:
   - yes | sdkmanager "platforms;android-30"
-  - yes | sdkmanager --licenses
 
 before_script:
   # Create and start emulator
