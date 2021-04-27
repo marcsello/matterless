@@ -8,7 +8,11 @@ import androidx.room.RoomDatabase
 @Database(entities = [Channel::class, ChannelWithPosts::class, Post::class, Team::class, TeamWithChannels::class, User::class], version = 1)
 abstract class AppDatabase : RoomDatabase() {
 
+    abstract fun channelDAO(): ChannelDAO
+    abstract fun postDAO(): PostDAO
     abstract fun teamDAO(): TeamDAO
+    abstract fun userDAO(): UserDAO
+
 
     companion object {
         @Volatile
