@@ -1,14 +1,19 @@
 package com.marcsello.matterless.db
 
-import androidx.room.Dao
-import androidx.room.Delete
-import androidx.room.Insert
-import androidx.room.Query
+import androidx.room.*
 
 @Dao
 interface TeamDAO {
-    @Query("""SELECT * FROM teams""")
+    @Query("SELECT * FROM teams")
     suspend fun getTeams(): List<Team>
+
+    @Transaction
+    @Query("SELECT * FROM teams")
+    suspend fun getTeamsWithChannels(): List<TeamWithChannels>
+
+    @Transaction
+    @Query("SELECT * FROM teams WHERE id = :id")
+    suspend fun getTeamWithChannelsById(id:String): List<TeamWithChannels>
 
     @Insert
     suspend fun insertTeams(vararg teams: Team)
