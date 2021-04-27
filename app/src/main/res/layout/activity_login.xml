@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="center_horizontal|center_vertical"
+    android:gravity="center_horizontal"
     android:orientation="vertical"
     tools:context=".ui.login.LoginActivity">
 
@@ -13,6 +13,7 @@
         android:id="@+id/imageViewLogo"
         android:layout_width="match_parent"
         android:layout_height="120dp"
+        android:layout_marginTop="20dp"
         android:layout_marginBottom="100dp"
         app:srcCompat="@drawable/logo" />
 
@@ -38,8 +39,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Server Address"
-                tools:layout_editor_absoluteX="92dp"
-                tools:layout_editor_absoluteY="272dp" />
+                />
 
 
             <EditText
@@ -49,15 +49,13 @@
                 android:ems="10"
                 android:inputType="textUri"
                 app:layout_constraintStart_toStartOf="@+id/textView2"
-                tools:layout_editor_absoluteY="402dp" />
+                />
 
             <TextView
                 android:id="@+id/textView2"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Username"
-                tools:layout_editor_absoluteX="97dp"
-                tools:layout_editor_absoluteY="389dp" />
+                android:text="Username" />
 
 
             <EditText
@@ -67,15 +65,14 @@
                 android:ems="10"
                 android:inputType="textPersonName"
                 app:layout_constraintStart_toStartOf="@+id/textView"
-                tools:layout_editor_absoluteY="291dp" />
+                android:layout_marginBottom="20dp"/>
 
             <TextView
                 android:id="@+id/textView3"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Password"
-                app:layout_constraintStart_toStartOf="@+id/editTextPassword"
-                tools:layout_editor_absoluteY="484dp" />
+                app:layout_constraintStart_toStartOf="@+id/editTextPassword" />
 
 
             <EditText
@@ -87,7 +84,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintStart_toStartOf="parent"
-                tools:layout_editor_absoluteY="503dp" />
+                />
 
 
         </LinearLayout>
@@ -102,7 +99,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="50dp"
+        android:layout_marginTop="150dp"
         android:orientation="horizontal">
 
         <Space
@@ -114,7 +111,6 @@
             android:id="@+id/buttonLogin"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="60dp"
             android:text="@string/loginBtnLabel"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
