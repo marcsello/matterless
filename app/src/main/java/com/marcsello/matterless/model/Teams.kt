@@ -14,5 +14,5 @@ data class Teams(
     var name: String? = null,
 
     @SerializedName("type")
-    var type: String? = null,
+    var type: String? = null
 )

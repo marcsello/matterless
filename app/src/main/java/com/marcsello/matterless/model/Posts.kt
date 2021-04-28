@@ -17,5 +17,5 @@ data class Posts (
     @SerializedName("user_id")
     var userId: String? = null,
     @SerializedName("type")
-    var type: String? = null,
+    var type: String? = null
 )

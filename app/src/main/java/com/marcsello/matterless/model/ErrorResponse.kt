@@ -13,5 +13,5 @@ class ErrorResponse (
     var message: String? = null,
 
     @SerializedName("requrest_id")
-    var requestId: String? = null,
+    var requestId: String? = null
 )

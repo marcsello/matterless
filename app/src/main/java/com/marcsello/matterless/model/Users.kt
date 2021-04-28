@@ -15,5 +15,5 @@ data class Users (
     @SerializedName("nickname")
     var nickname: String? = null,
     @SerializedName("roles")
-    var roles: String? = null,
+    var roles: String? = null
 )
