@@ -8,9 +8,9 @@ interface PostsApi {
 
     @POST("posts")
     fun createPost(
-
-        // TODO
-
+        @Field("channel_id") channelId: String,
+        @Field("message") message: String,
+        @Field("root_id") rootId: String?
     ): Call<Posts>
 
     @GET("channels/{channel_id}/posts")
