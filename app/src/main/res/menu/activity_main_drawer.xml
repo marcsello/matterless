@@ -4,10 +4,4 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:showIn="navigation_view">
 
-
-    <item android:title="Team 1" />
-    <item android:title="Team 2" />
-    <item android:title="Team 3" />
-    <item android:title="Team 4" />
-
 </menu>

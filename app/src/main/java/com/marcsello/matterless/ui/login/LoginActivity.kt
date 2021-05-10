@@ -1,9 +1,9 @@
 package com.marcsello.matterless.ui.login
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import com.marcsello.matterless.R
 import com.marcsello.matterless.injector
 import com.marcsello.matterless.ui.home.HomeActivity
@@ -33,8 +33,10 @@ class LoginActivity : AppCompatActivity(), LoginScreen {
         Toast.makeText(this, "Login Falied: $reason", Toast.LENGTH_LONG).show();
     }
 
+    // Ez az ami a screen interfészben van definiálva és a presenter hívogatni tudja, ha kész van valamivel
     override fun loinSuccessful(username: String) {
         val intent = Intent(this, HomeActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         intent.putExtra(KEY_USERNAME, username);
         startActivity(intent)
     }
