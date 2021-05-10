@@ -1,11 +1,15 @@
 package com.marcsello.matterless.ui.home
 
+import android.content.Intent
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.marcsello.matterless.R
+import com.marcsello.matterless.ui.chat.ChatActivity
+import java.lang.ref.WeakReference
 
 class ChannelListAdapter : RecyclerView.Adapter<ChannelListAdapter.ViewHolder>() {
 
@@ -13,16 +17,19 @@ class ChannelListAdapter : RecyclerView.Adapter<ChannelListAdapter.ViewHolder>()
      * Provide a reference to the type of views that you are using
      * (custom ViewHolder).
      */
-    class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+    class ViewHolder(view: View) : RecyclerView.ViewHolder(view), View.OnClickListener {
         private val textChannelName: TextView = view.findViewById(R.id.textChannelName)
         private val textLastMessage: TextView = view.findViewById(R.id.textLastMessage)
         private val textMessageIndicator: TextView = view.findViewById(R.id.textMessageIndicator)
+        private lateinit var referencedChannelDataPtr: WeakReference<ChannelData>
 
         init {
-            // Define click listener for the ViewHolder's View.
+            view.setOnClickListener(this)
         }
 
         fun loadFromChannelData(channelData: ChannelData) {
+            referencedChannelDataPtr = WeakReference(channelData)
+
             textChannelName.text = channelData.name
             textLastMessage.text = channelData.last_message
 
@@ -30,6 +37,19 @@ class ChannelListAdapter : RecyclerView.Adapter<ChannelListAdapter.ViewHolder>()
                 textMessageIndicator.text = "*"
             } else {
                 textMessageIndicator.text = ""
+            }
+        }
+
+        override fun onClick(view: View?) {
+            val channelData = referencedChannelDataPtr.get() ?: return
+
+            Log.println(Log.VERBOSE, "ChannelListAdapter", "Opening channel ${channelData.id}")
+
+            if (view != null) {
+                val intent = Intent(view.context, ChatActivity::class.java)
+                intent.putExtra(ChatActivity.KEY_CHANNEL_ID, channelData.id)
+                intent.putExtra(ChatActivity.KEY_IS_THREAD, false)
+                view.context.startActivity(intent)
             }
         }
     }
@@ -57,7 +77,7 @@ class ChannelListAdapter : RecyclerView.Adapter<ChannelListAdapter.ViewHolder>()
     override fun getItemCount() = channels.size
 
     // Wrapped helper stuff
-    fun setContents(new_channels:ArrayList<ChannelData>) {
+    fun setContents(new_channels: ArrayList<ChannelData>) {
         channels = new_channels
         notifyDataSetChanged()
     }

@@ -8,6 +8,8 @@ class HomePresenter : Presenter<HomeScreen>() {
         Log.println(Log.VERBOSE, "HomePresenter", "Changing team to $id")
         // This should load all chat info
 
+        // TODO: store id
+
         if (id == "a") {
             screen?.channelsLoaded(
                 arrayListOf(
