@@ -48,6 +48,7 @@ class ChannelListAdapter : RecyclerView.Adapter<ChannelListAdapter.ViewHolder>()
             if (view != null) {
                 val intent = Intent(view.context, ChatActivity::class.java)
                 intent.putExtra(ChatActivity.KEY_CHANNEL_ID, channelData.id)
+                intent.putExtra(ChatActivity.KEY_CHANNEL_FRIENDLY_NAME, channelData.name)
                 intent.putExtra(ChatActivity.KEY_IS_THREAD, false)
                 view.context.startActivity(intent)
             }
@@ -77,8 +78,8 @@ class ChannelListAdapter : RecyclerView.Adapter<ChannelListAdapter.ViewHolder>()
     override fun getItemCount() = channels.size
 
     // Wrapped helper stuff
-    fun setContents(new_channels: ArrayList<ChannelData>) {
-        channels = new_channels
+    fun setContents(channels: ArrayList<ChannelData>) {
+        this.channels = channels
         notifyDataSetChanged()
     }
 

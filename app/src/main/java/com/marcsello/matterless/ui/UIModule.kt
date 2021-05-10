@@ -1,6 +1,7 @@
 package com.marcsello.matterless.ui
 
 import android.content.Context
+import com.marcsello.matterless.ui.chat.ChatPresenter
 import com.marcsello.matterless.ui.home.HomePresenter
 import com.marcsello.matterless.ui.login.LoginPresenter
 import dagger.Module
@@ -20,5 +21,9 @@ class UIModule(private val context: Context) {
     @Provides
     @Singleton
     fun homePresenter() = HomePresenter()
+
+    @Provides
+    @Singleton
+    fun chatPresenter() = ChatPresenter()
 
 }

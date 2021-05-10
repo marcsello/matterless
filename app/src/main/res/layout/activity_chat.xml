@@ -8,7 +8,7 @@
     android:orientation="vertical">
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/messagesView"
+        android:id="@+id/recyclerViewChatMessages"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_weight="1" />
@@ -20,7 +20,7 @@
         android:layout_weight="0">
 
         <EditText
-            android:id="@+id/editTextTextMultiLine"
+            android:id="@+id/editTextChatMessage"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -29,7 +29,7 @@
             android:inputType="textMultiLine" />
 
         <ImageButton
-            android:id="@+id/imageButton"
+            android:id="@+id/btnSendMessage"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="0"

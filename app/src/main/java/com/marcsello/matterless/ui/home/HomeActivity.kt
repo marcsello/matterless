@@ -32,7 +32,7 @@ class HomeActivity : AppCompatActivity(), HomeScreen,
     private lateinit var header: View
 
     private var teams: ArrayList<TeamData>? = null
-    private var displayed_team_id: Int? = null;
+    private var displayed_team_id: Int? = null
 
     private val channelListAdapter = ChannelListAdapter()
 
