@@ -52,7 +52,7 @@ class ChatListAdapter : RecyclerView.Adapter<ChatListAdapter.ViewHolder>() {
                     ProfileActivity.KEY_USER_FRIENDLY_NAME,
                     chatMessageData.senderFriendlyName
                 )
-                intent.putExtra(ProfileActivity.KEY_CHANNEL_ID, chatMessageData.senderId)
+                intent.putExtra(ProfileActivity.KEY_USER_ID, chatMessageData.senderId)
                 view.context.startActivity(intent)
             }
         }

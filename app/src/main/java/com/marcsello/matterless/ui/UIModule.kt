@@ -4,6 +4,7 @@ import android.content.Context
 import com.marcsello.matterless.ui.chat.ChatPresenter
 import com.marcsello.matterless.ui.home.HomePresenter
 import com.marcsello.matterless.ui.login.LoginPresenter
+import com.marcsello.matterless.ui.profile.ProfilePresenter
 import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton
@@ -25,5 +26,10 @@ class UIModule(private val context: Context) {
     @Provides
     @Singleton
     fun chatPresenter() = ChatPresenter()
+
+    @Provides
+    @Singleton
+    fun profilePresenter() = ProfilePresenter()
+
 
 }
