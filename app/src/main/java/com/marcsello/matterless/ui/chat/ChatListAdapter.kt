@@ -31,7 +31,7 @@ class ChatListAdapter : RecyclerView.Adapter<ChatListAdapter.ViewHolder>() {
         fun loadFromChatMessageData(chatMessageData: ChatMessageData) {
             referencedchatMessageDataPtr = WeakReference(chatMessageData)
 
-            textSenderName.text = chatMessageData.sender
+            textSenderName.text = chatMessageData.senderFriendlyName
             textSentDate.text = chatMessageData.timestamp
             textMessageContent.text = chatMessageData.content
 
@@ -40,11 +40,19 @@ class ChatListAdapter : RecyclerView.Adapter<ChatListAdapter.ViewHolder>() {
         override fun onClick(view: View?) {
             val chatMessageData = referencedchatMessageDataPtr.get() ?: return
 
-            Log.println(Log.VERBOSE, "ChatListAdapter", "Opening profile of TODO")
+            Log.println(
+                Log.VERBOSE,
+                "ChatListAdapter",
+                "Opening profile of ${chatMessageData.senderId}"
+            )
 
             if (view != null) {
                 val intent = Intent(view.context, ProfileActivity::class.java)
-
+                intent.putExtra(
+                    ProfileActivity.KEY_USER_FRIENDLY_NAME,
+                    chatMessageData.senderFriendlyName
+                )
+                intent.putExtra(ProfileActivity.KEY_CHANNEL_ID, chatMessageData.senderId)
                 view.context.startActivity(intent)
             }
         }
@@ -80,7 +88,7 @@ class ChatListAdapter : RecyclerView.Adapter<ChatListAdapter.ViewHolder>() {
 
     fun addNewItem(message: ChatMessageData) {
         chatMessages.add(message)
-        notifyItemInserted(chatMessages.size-1)
+        notifyItemInserted(chatMessages.size - 1)
     }
 
 }
