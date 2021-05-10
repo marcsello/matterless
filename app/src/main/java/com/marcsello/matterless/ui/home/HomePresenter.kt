@@ -13,19 +13,19 @@ class HomePresenter : Presenter<HomeScreen>() {
                 arrayListOf(
                     ChannelData("asd", "misc-rage", "asdasd", false),
                     ChannelData("asd2", "misc-random", "asd2", true)
-                )
+                ),id
             )
         } else {
             screen?.channelsLoaded(
                 arrayListOf(
                     ChannelData("asd", "misc-happy", "aaaa", true),
                     ChannelData("asd2", "kszk-general", "aaaaa", true)
-                )
+                ),id
             )
         }
     }
 
-    fun loadDataOnForeground() {
+    fun loadDataOnStart() {
 
         Log.println(Log.VERBOSE, "HomePresenter", "Start loading of initial data...")
 
@@ -33,7 +33,7 @@ class HomePresenter : Presenter<HomeScreen>() {
         // This is to ensure, that teams won't be loaded when there is no living activity that requires this
         screen?.personalDataLoaded("Marcsello", "KSZK");
 
-        val teams = listOf(TeamData("a", "Alma"), TeamData("b", "Barack"))
+        val teams = arrayListOf(TeamData("a", "Alma"), TeamData("b", "Barack"))
 
         screen?.teamsLoaded(teams, "a")
 

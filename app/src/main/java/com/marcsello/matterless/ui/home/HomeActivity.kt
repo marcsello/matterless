@@ -21,7 +21,8 @@ import com.marcsello.matterless.ui.login.LoginActivity
 import javax.inject.Inject
 
 
-class HomeActivity : AppCompatActivity(), HomeScreen, NavigationView.OnNavigationItemSelectedListener {
+class HomeActivity : AppCompatActivity(), HomeScreen,
+    NavigationView.OnNavigationItemSelectedListener {
 
     @Inject
     lateinit var homePresenter: HomePresenter
@@ -30,8 +31,8 @@ class HomeActivity : AppCompatActivity(), HomeScreen, NavigationView.OnNavigatio
     private lateinit var navigationView: NavigationView
     private lateinit var header: View
 
-    private val teamIdMap = HashMap<Int, String>()
-    private var displayed_team_id:String? = null;
+    private var teams: ArrayList<TeamData>? = null
+    private var displayed_team_id: Int? = null;
 
     private val channelListAdapter = ChannelListAdapter()
 
@@ -52,7 +53,6 @@ class HomeActivity : AppCompatActivity(), HomeScreen, NavigationView.OnNavigatio
 
         navigationView.setNavigationItemSelectedListener(this)
         navigationView.menu.clear()
-        teamIdMap.clear()
         channelListAdapter.clear()
 
         val buttonLogout: Button = header.findViewById(R.id.buttonLogout)
@@ -73,31 +73,57 @@ class HomeActivity : AppCompatActivity(), HomeScreen, NavigationView.OnNavigatio
         return true
     }
 
-    private fun performTeamChange(to_id:String) {
-        if ((displayed_team_id == null) or (displayed_team_id != to_id)) {
+    private fun performTeamChange(index: Int) {
+
+        if (teams == null) {
+            return;
+        }
+
+        if ((displayed_team_id == null) or (displayed_team_id != index)) {
             channelListAdapter.clear()
-            homePresenter.changeTeam(to_id);
-            displayed_team_id = to_id;
+            this.title = teams!![index].name // Sets the activity title
+            displayed_team_id = index; // this may required in the channelsLoaded call so we have to set it before
+
+            homePresenter.changeTeam(teams!![index].id);
         }
     }
 
-    override fun teamsLoaded(teams: List<TeamData>, current_team_id: String) {
+    override fun teamsLoaded(teams: ArrayList<TeamData>, current_team_id: String) {
+        this.teams = teams
         navigationView.menu.clear()
-        teamIdMap.clear()
 
-        var id:Int = 0;
-        teams.forEach {
-            navigationView.menu.add(Menu.NONE, id, Menu.NONE, it.name);
-            teamIdMap[id] = it.id;
-            Log.println(Log.VERBOSE, "HomeActivity", "Adding team ${it.name} to list at ${id}")
-            id++;
+        var target_id: Int? = null
+        teams.forEachIndexed { i, v ->
+            navigationView.menu.add(Menu.NONE, i, Menu.NONE, v.name);
+            Log.println(Log.VERBOSE, "HomeActivity", "Adding team ${v.name} to list at $i")
+
+            if (v.id == current_team_id) {
+                target_id = i
+            }
         }
 
-        performTeamChange(current_team_id)
+        if (target_id != null) {
+            performTeamChange(target_id!!)
+        } else {
+            performTeamChange(0)
+        }
     }
 
-    override fun channelsLoaded(channels: ArrayList<ChannelData>) {
-        channelListAdapter.setContents(channels)
+    override fun channelsLoaded(channels: ArrayList<ChannelData>, team_id: String) {
+
+        var displayed_team_api_id:String? = null
+        if (displayed_team_id != null) {
+            try {
+                displayed_team_api_id = teams!![displayed_team_id!!].id
+            } catch (e:KotlinNullPointerException) {
+                // Just keep it null then
+            }
+        }
+
+        if ((displayed_team_api_id == null) or (displayed_team_api_id == team_id)) {
+            channelListAdapter.setContents(channels)
+        }
+
     }
 
     override fun personalDataLoaded(username: String, serverName: String) {
@@ -119,7 +145,7 @@ class HomeActivity : AppCompatActivity(), HomeScreen, NavigationView.OnNavigatio
         homePresenter.attachScreen(this)
 
         // Start loading data
-        homePresenter.loadDataOnForeground()
+        homePresenter.loadDataOnStart()
     }
 
     override fun onStop() {
@@ -128,12 +154,7 @@ class HomeActivity : AppCompatActivity(), HomeScreen, NavigationView.OnNavigatio
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
-
-        val new_id = teamIdMap[item.itemId]
-
-        if (new_id != null) {
-            performTeamChange(new_id)
-        }
+        performTeamChange(item.itemId)
         return true
     }
 
