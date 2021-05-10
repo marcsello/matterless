@@ -8,11 +8,12 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.ui.AppBarConfiguration
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.navigation.NavigationView
 import com.marcsello.matterless.R
 import com.marcsello.matterless.injector
@@ -29,9 +30,10 @@ class HomeActivity : AppCompatActivity(), HomeScreen, NavigationView.OnNavigatio
     private lateinit var navigationView: NavigationView
     private lateinit var header: View
 
-    private var teamIdMap = HashMap<Int, String>()
-
+    private val teamIdMap = HashMap<Int, String>()
     private var displayed_team_id:String? = null;
+
+    private val channelListAdapter = ChannelListAdapter()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,11 +53,17 @@ class HomeActivity : AppCompatActivity(), HomeScreen, NavigationView.OnNavigatio
         navigationView.setNavigationItemSelectedListener(this)
         navigationView.menu.clear()
         teamIdMap.clear()
+        channelListAdapter.clear()
 
         val buttonLogout: Button = header.findViewById(R.id.buttonLogout)
         buttonLogout.setOnClickListener {
             homePresenter.performLogout()
         }
+
+
+        val recycleViewChannelList = findViewById<View>(R.id.recycleViewChannelList) as RecyclerView
+        recycleViewChannelList.adapter = channelListAdapter
+        recycleViewChannelList.layoutManager = LinearLayoutManager(this)
 
     }
 
@@ -67,6 +75,7 @@ class HomeActivity : AppCompatActivity(), HomeScreen, NavigationView.OnNavigatio
 
     private fun performTeamChange(to_id:String) {
         if ((displayed_team_id == null) or (displayed_team_id != to_id)) {
+            channelListAdapter.clear()
             homePresenter.changeTeam(to_id);
             displayed_team_id = to_id;
         }
@@ -78,7 +87,7 @@ class HomeActivity : AppCompatActivity(), HomeScreen, NavigationView.OnNavigatio
 
         var id:Int = 0;
         teams.forEach {
-            val item:MenuItem = navigationView.menu.add(Menu.NONE, id, Menu.NONE, it.name);
+            navigationView.menu.add(Menu.NONE, id, Menu.NONE, it.name);
             teamIdMap[id] = it.id;
             Log.println(Log.VERBOSE, "HomeActivity", "Adding team ${it.name} to list at ${id}")
             id++;
@@ -87,8 +96,8 @@ class HomeActivity : AppCompatActivity(), HomeScreen, NavigationView.OnNavigatio
         performTeamChange(current_team_id)
     }
 
-    override fun channelsLoaded(channels: List<ChannelData>) {
-        TODO("Not yet implemented")
+    override fun channelsLoaded(channels: ArrayList<ChannelData>) {
+        channelListAdapter.setContents(channels)
     }
 
     override fun personalDataLoaded(username: String, serverName: String) {
@@ -122,7 +131,6 @@ class HomeActivity : AppCompatActivity(), HomeScreen, NavigationView.OnNavigatio
 
         val new_id = teamIdMap[item.itemId]
 
-        Toast.makeText(this, new_id, Toast.LENGTH_SHORT).show()
         if (new_id != null) {
             performTeamChange(new_id)
         }

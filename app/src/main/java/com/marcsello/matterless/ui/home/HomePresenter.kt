@@ -2,12 +2,27 @@ package com.marcsello.matterless.ui.home
 
 import android.util.Log
 import com.marcsello.matterless.ui.Presenter
-import com.marcsello.matterless.ui.login.LoginScreen
 
 class HomePresenter : Presenter<HomeScreen>() {
     fun changeTeam(id: String) {
         Log.println(Log.VERBOSE, "HomePresenter", "Changing team to $id")
         // This should load all chat info
+
+        if (id == "a") {
+            screen?.channelsLoaded(
+                arrayListOf(
+                    ChannelData("asd", "misc-rage", "asdasd", false),
+                    ChannelData("asd2", "misc-random", "asd2", true)
+                )
+            )
+        } else {
+            screen?.channelsLoaded(
+                arrayListOf(
+                    ChannelData("asd", "misc-happy", "aaaa", true),
+                    ChannelData("asd2", "kszk-general", "aaaaa", true)
+                )
+            )
+        }
     }
 
     fun loadDataOnForeground() {
