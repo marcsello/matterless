@@ -18,7 +18,7 @@ class ProfileActivity : AppCompatActivity(), ProfileScreen {
     @Inject
     lateinit var profilePresenter: ProfilePresenter
 
-    private lateinit var userId:String
+    private lateinit var userId: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,7 +43,7 @@ class ProfileActivity : AppCompatActivity(), ProfileScreen {
     }
 
     override fun userDataLoaded(
-        id:String,
+        id: String,
         username: String,
         firstName: String,
         lastName: String,
@@ -59,8 +59,8 @@ class ProfileActivity : AppCompatActivity(), ProfileScreen {
         }
     }
 
-    override fun profilePictureLoaded(f: File) {
-        if (f.exists()) {
+    override fun profilePictureLoaded(userId: String, f: File) {
+        if ((userId == this.userId) and f.exists()) {
             val profileBitmap = BitmapFactory.decodeFile(f.absolutePath)
             val imageProfile: ImageView = findViewById<View>(R.id.imageProfile) as ImageView
             imageProfile.setImageBitmap(profileBitmap)

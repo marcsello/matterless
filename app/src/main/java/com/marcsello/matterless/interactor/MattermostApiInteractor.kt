@@ -98,9 +98,9 @@ class MattermostApiInteractor @Inject constructor(private val context: Context) 
                 Log.println(
                     Log.INFO,
                     "MattermostApi",
-                    "Saved token is still valid, performing login"
+                    "Saved token is still valid, continuing session"
                 )
-                EventBus.getDefault().post(LoginResultEvent(true, servers[0].loginId, null))
+                EventBus.getDefault().post(LoginResultEvent(true, servers[0].loginId, me_id, null))
 
             }
         }
@@ -124,7 +124,7 @@ class MattermostApiInteractor @Inject constructor(private val context: Context) 
 
                 if (response.code() != 200) {
                     EventBus.getDefault()
-                        .post(LoginResultEvent(false, username, "HTTP ${response.code()}"))
+                        .post(LoginResultEvent(false, username, null,"HTTP ${response.code()}"))
                     return@runBlocking
                 }
 
@@ -134,7 +134,7 @@ class MattermostApiInteractor @Inject constructor(private val context: Context) 
 
             } catch (e: Exception) {
                 EventBus.getDefault()
-                    .post(LoginResultEvent(false, username, e.toString()))
+                    .post(LoginResultEvent(false, username, null, e.toString()))
                 return@runBlocking
             }
 
@@ -145,7 +145,7 @@ class MattermostApiInteractor @Inject constructor(private val context: Context) 
             }
 
             Log.println(Log.INFO, "MattermostApi", "Login successful")
-            EventBus.getDefault().post(LoginResultEvent(true, username, null))
+            EventBus.getDefault().post(LoginResultEvent(true, username, me_id,null))
 
         }
     }
@@ -722,14 +722,14 @@ class MattermostApiInteractor @Inject constructor(private val context: Context) 
 
             override fun onResponse(call: Call<ResponseBody>?, response: Response<ResponseBody>?) {
                 if (response!!.isSuccessful) {
-                    Log.v("MattermostApi.downloadP", "Requested profile pic for: $userId")
+                    Log.v("MattermostApi.downloadP", "Requested profile pic for: $userIdResolved")
 
-                    val outputFile = File(context.externalCacheDir, userId)
+                    val outputFile = File(context.externalCacheDir, userIdResolved)
 
                     if (!outputFile.exists()) {
                         try {
                             writeUserProfilePicture(response.body()!!, outputFile)
-                        } catch (e:Exception) {
+                        } catch (e: Exception) {
                             Log.e("MattermostApi.downloadP", "Download failed: $e")
                             return
                         }
@@ -740,7 +740,7 @@ class MattermostApiInteractor @Inject constructor(private val context: Context) 
 
                     EventBus.getDefault().post(
                         UserProfilePictureReady(
-                            userId,
+                            userIdResolved,
                             outputFile
                         )
                     )
@@ -757,7 +757,7 @@ class MattermostApiInteractor @Inject constructor(private val context: Context) 
 
     }
 
-    private fun writeUserProfilePicture(body: ResponseBody, outputFile:File) {
+    private fun writeUserProfilePicture(body: ResponseBody, outputFile: File) {
 
         val inputStream: InputStream = body.byteStream()
         val outputStream: OutputStream = FileOutputStream(outputFile)

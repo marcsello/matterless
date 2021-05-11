@@ -1,10 +1,7 @@
 package com.marcsello.matterless.ui.home
 
 import android.util.Log
-import com.marcsello.matterless.events.ChannelsLoadedEvent
-import com.marcsello.matterless.events.LoginResultEvent
-import com.marcsello.matterless.events.TeamsLoadedEvent
-import com.marcsello.matterless.events.UserInfoLoaded
+import com.marcsello.matterless.events.*
 import com.marcsello.matterless.interactor.LocalDataInteractor
 import com.marcsello.matterless.interactor.MattermostApiInteractor
 import com.marcsello.matterless.ui.Presenter
@@ -21,7 +18,7 @@ class HomePresenter @Inject constructor(
     private val localDataInteractor: LocalDataInteractor
 ) : Presenter<HomeScreen>() {
 
-    private var executor = Executors.newFixedThreadPool(1)
+    private var executor = Executors.newFixedThreadPool(3)
 
     fun changeTeam(id: String) {
         Log.println(Log.VERBOSE, "HomePresenter", "Changing team to $id")
@@ -47,6 +44,9 @@ class HomePresenter @Inject constructor(
         }
         executor.execute {
             mattermostApiInteractor.loadTeams("me")
+        }
+        executor.execute {
+            mattermostApiInteractor.downloadProfilePicture("me")
         }
 
     }
@@ -75,6 +75,11 @@ class HomePresenter @Inject constructor(
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onEventMainThread(event: UserInfoLoaded) {
         screen?.personalDataLoaded(event.nickname, event.roles)
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onEventMainThread(event: UserProfilePictureReady) {
+        screen?.profilePictureLoaded(event.userId, event.f)
     }
 
 }

@@ -51,7 +51,7 @@ class LoginPresenter @Inject constructor(private val mattermostApiInteractor: Ma
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onEventMainThread(event: LoginResultEvent) {
         if (event.success) {
-            screen?.loginSuccessful(event.username)
+            screen?.loginSuccessful(event.username, event.userId!!)
         } else {
             screen?.showLoginError(event.reason!!)
         }

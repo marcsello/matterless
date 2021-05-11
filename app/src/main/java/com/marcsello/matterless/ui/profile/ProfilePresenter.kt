@@ -40,7 +40,7 @@ class ProfilePresenter @Inject constructor(private val mattermostApiInteractor: 
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onEventMainThread(event: UserProfilePictureReady) {
-        screen?.profilePictureLoaded(event.f)
+        screen?.profilePictureLoaded(event.userId, event.f)
     }
 
 }

@@ -12,5 +12,5 @@ interface ProfileScreen {
         roles: String
     )
 
-    fun profilePictureLoaded(f: File)
+    fun profilePictureLoaded(userId:String, f: File)
 }

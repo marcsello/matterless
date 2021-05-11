@@ -1,12 +1,14 @@
 package com.marcsello.matterless.ui.home
 
 import android.content.Intent
+import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
@@ -18,6 +20,7 @@ import com.google.android.material.navigation.NavigationView
 import com.marcsello.matterless.R
 import com.marcsello.matterless.injector
 import com.marcsello.matterless.ui.login.LoginActivity
+import java.io.File
 import javax.inject.Inject
 
 
@@ -36,12 +39,17 @@ class HomeActivity : AppCompatActivity(), HomeScreen,
 
     private val channelListAdapter = ChannelListAdapter()
 
+    private lateinit var userId: String
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
         injector.inject(this)
 
+        this.userId = intent.getStringExtra(LoginActivity.KEY_USER_ID)!!
+
         title = "Loading..."
+
 
         val toolbar: Toolbar = findViewById(R.id.toolbar)
         setSupportActionBar(toolbar)
@@ -84,7 +92,8 @@ class HomeActivity : AppCompatActivity(), HomeScreen,
         if ((displayed_team_id == null) or (displayed_team_id != index)) {
             channelListAdapter.clear()
             this.title = teams!![index].name // Sets the activity title
-            displayed_team_id = index; // this may required in the channelsLoaded call so we have to set it before
+            // this may required in the channelsLoaded call so we have to set it before
+            displayed_team_id = index;
 
             homePresenter.changeTeam(teams!![index].id);
         }
@@ -113,11 +122,11 @@ class HomeActivity : AppCompatActivity(), HomeScreen,
 
     override fun channelsLoaded(channels: ArrayList<ChannelData>, team_id: String) {
 
-        var displayed_team_api_id:String? = null
+        var displayed_team_api_id: String? = null
         if (displayed_team_id != null) {
             try {
                 displayed_team_api_id = teams!![displayed_team_id!!].id
-            } catch (e:KotlinNullPointerException) {
+            } catch (e: KotlinNullPointerException) {
                 // Just keep it null then
             }
         }
@@ -134,6 +143,14 @@ class HomeActivity : AppCompatActivity(), HomeScreen,
 
         val textServerName: TextView = header.findViewById(R.id.textServerName)
         textServerName.text = serverName;
+    }
+
+    override fun profilePictureLoaded(userId: String, f: File) {
+        if ((userId == this.userId) and f.exists()) {
+            val profileBitmap = BitmapFactory.decodeFile(f.absolutePath)
+            val imageSelfProfile: ImageView = findViewById<View>(R.id.imageSelfProfile) as ImageView
+            imageSelfProfile.setImageBitmap(profileBitmap)
+        }
     }
 
     override fun loggedOut() {

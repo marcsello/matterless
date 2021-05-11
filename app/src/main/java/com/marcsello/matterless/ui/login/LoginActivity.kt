@@ -40,10 +40,11 @@ class LoginActivity : AppCompatActivity(), LoginScreen {
     }
 
     // Ez az ami a screen interfészben van definiálva és a presenter hívogatni tudja, ha kész van valamivel
-    override fun loginSuccessful(username: String) {
+    override fun loginSuccessful(username: String, userId:String) {
         val intent = Intent(this, HomeActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         intent.putExtra(KEY_USERNAME, username);
+        intent.putExtra(KEY_USER_ID, userId);
         startActivity(intent)
     }
 
@@ -62,5 +63,6 @@ class LoginActivity : AppCompatActivity(), LoginScreen {
 
     companion object {
         const val KEY_USERNAME = "KEY_USERNAME"
+        const val KEY_USER_ID = "KEY_USER_ID"
     }
 }
