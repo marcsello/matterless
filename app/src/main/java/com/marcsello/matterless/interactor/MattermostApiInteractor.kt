@@ -110,6 +110,7 @@ class MattermostApiInteractor @Inject constructor(private val context: Context) 
 
             val call = usersApi.doLogin(LoginCredentials(username, password))
 
+            var token_to_save = ""
             try {
                 val response = call.execute()
 
@@ -119,7 +120,8 @@ class MattermostApiInteractor @Inject constructor(private val context: Context) 
                     return@runBlocking
                 }
 
-                token = "Bearer " + response.headers()["Token"]!! // Hope it does not catch on fire
+                token_to_save = response.headers()["Token"]!!
+                token = "Bearer $token_to_save" // Hope it does not catch on fire
                 me_id = response.body()?.id!!
 
             } catch (e: Exception) {
@@ -128,7 +130,7 @@ class MattermostApiInteractor @Inject constructor(private val context: Context) 
                 return@runBlocking
             }
 
-            val s = Server(0, server, username, password, token, null)
+            val s = Server(0, server, username, password, token_to_save, null)
 
             launch(Dispatchers.IO) {
                 dbInstance.serverDAO().insertServers(s)
