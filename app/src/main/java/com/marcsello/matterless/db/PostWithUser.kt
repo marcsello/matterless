@@ -9,5 +9,5 @@ data class PostWithUser(
         parentColumn = "user_id",
         entityColumn = "id"
     )
-    var user: User
+    val user: User
 )

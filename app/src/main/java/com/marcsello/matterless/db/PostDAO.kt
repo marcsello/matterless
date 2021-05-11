@@ -1,26 +1,28 @@
 package com.marcsello.matterless.db
 
-import androidx.room.Dao
-import androidx.room.Delete
-import androidx.room.Insert
-import androidx.room.Query
+import androidx.room.*
 
 @Dao
 interface PostDAO {
+    @Transaction
     @Query("SELECT * FROM posts ORDER BY create_at ASC")
-    suspend fun getPosts(): List<Post>
+    suspend fun getPosts(): List<PostWithUser>
 
+    @Transaction
     @Query("SELECT * FROM posts WHERE channel_id = :channelId ORDER BY create_at ASC")
-    suspend fun getPostsOfChannel(channelId: String): List<Post>
+    suspend fun getPostsOfChannel(channelId: String): List<PostWithUser>
 
+    @Transaction
     @Query("SELECT * FROM posts WHERE create_at > :since ORDER BY create_at ASC")
-    suspend fun getPostsSince(since: Long): List<Post>
+    suspend fun getPostsSince(since: Long): List<PostWithUser>
 
+    @Transaction
     @Query("SELECT * FROM posts WHERE create_at > :since AND channel_id = :channelId ORDER BY create_at ASC")
-    suspend fun getPostsOfChannelSince(channelId: String, since: Long): List<Post>
+    suspend fun getPostsOfChannelSince(channelId: String, since: Long): List<PostWithUser>
 
+    @Transaction
     @Query("SELECT * FROM posts WHERE root_id = :rootId OR id = root_id ORDER BY create_at ASC")
-    suspend fun getAllPostsOfThread(rootId: String): List<Post>
+    suspend fun getAllPostsOfThread(rootId: String): List<PostWithUser>
 
     @Insert
     suspend fun insertPosts(vararg post: Post)

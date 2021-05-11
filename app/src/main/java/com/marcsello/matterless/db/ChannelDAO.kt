@@ -19,6 +19,10 @@ interface ChannelDAO {
     @Query("SELECT * FROM channels WHERE team_id = :teamId AND last_post_at > last_read_at ORDER BY last_read_at DESC")
     suspend fun getChannelsOfTeamWithUnread(teamId: String): List<Channel>
 
+    @Transaction
+    @Query("SELECT * FROM channels WHERE id = :channelId")
+    suspend fun getChannel(channelId: String): List<ChannelWithPosts>
+
     @Insert
     suspend fun insertChannels(vararg channels: Channel)
 

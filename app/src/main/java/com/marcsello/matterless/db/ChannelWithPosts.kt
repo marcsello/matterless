@@ -5,10 +5,10 @@ import androidx.room.Entity
 import androidx.room.Relation
 
 data class ChannelWithPosts (
-    @Embedded var channel: Channel,
+    @Embedded val channel: Channel,
     @Relation (
         parentColumn = "id",
         entityColumn = "channel_id"
     )
-    var posts: List<Post>
+    val posts: List<Post>
 )

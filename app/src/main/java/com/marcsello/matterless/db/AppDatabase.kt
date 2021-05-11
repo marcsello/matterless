@@ -5,7 +5,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [Channel::class, ChannelWithPosts::class, Post::class, Team::class, TeamWithChannels::class, User::class, Server::class], version = 1)
+@Database(entities = [Channel::class, Post::class, Team::class, User::class, Server::class], version = 1)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun channelDAO(): ChannelDAO

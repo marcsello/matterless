@@ -4,10 +4,10 @@ import androidx.room.Embedded
 import androidx.room.Relation
 
 data class TeamWithChannels (
-    @Embedded var team: Team,
+    @Embedded val team: Team,
     @Relation (
         parentColumn = "id",
         entityColumn = "team_id"
     )
-    var channels: List<Channel>
+    val channels: List<Channel>
 )
