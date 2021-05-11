@@ -20,8 +20,9 @@ class ProfileActivity : AppCompatActivity(), ProfileScreen {
         setContentView(R.layout.activity_profile)
         injector.inject(this)
 
-        title = intent.getStringExtra(KEY_USER_FRIENDLY_NAME)
+
         userId = intent.getStringExtra(KEY_USER_ID)!! // Null pointer exception enabled
+        title = "Loading..."
 
     }
 
@@ -45,8 +46,11 @@ class ProfileActivity : AppCompatActivity(), ProfileScreen {
         roles: String
     ) {
         if (id == userId) {
-            findViewById<TextView>(R.id.textViewUserName).text = "$firstName $lastName"
-            findViewById<TextView>(R.id.textViewUserTitle).text = roles
+            findViewById<TextView>(R.id.textViewUserFullName).text = "$firstName $lastName"
+            findViewById<TextView>(R.id.textViewNickname).text = nickname
+            title = username
+            findViewById<TextView>(R.id.textViewRoles).text = "Roles: $roles"
+            findViewById<TextView>(R.id.textViewUserId).text = "Internal ID: $id"
         }
     }
 

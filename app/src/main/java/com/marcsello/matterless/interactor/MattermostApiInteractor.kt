@@ -41,6 +41,7 @@ class MattermostApiInteractor @Inject constructor(private val context: Context) 
             dbInstance.postDAO().deleteAllPosts()
             dbInstance.channelDAO().deleteAllChannles()
             dbInstance.teamDAO().deleteAllTeams()
+            Log.println(Log.INFO,"MattermostApi","Startup clean performed")
         }
     }
 
@@ -90,6 +91,7 @@ class MattermostApiInteractor @Inject constructor(private val context: Context) 
                     return@runBlocking
                 }
 
+                Log.println(Log.INFO,"MattermostApi","Saved token is still valid, performing login")
                 EventBus.getDefault().post(LoginResultEvent(true, servers[0].loginId, null))
 
             }
@@ -134,6 +136,7 @@ class MattermostApiInteractor @Inject constructor(private val context: Context) 
                 dbInstance.serverDAO().insertServers(s)
             }
 
+            Log.println(Log.INFO,"MattermostApi","Login successful")
             EventBus.getDefault().post(LoginResultEvent(true, username, null))
 
         }

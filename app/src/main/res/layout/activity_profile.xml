@@ -15,19 +15,42 @@
             tools:srcCompat="@tools:sample/avatars" />
 
         <TextView
-            android:id="@+id/textViewUserName"
+            android:id="@+id/textViewUserFullName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
             android:padding="10dp"
-            android:text="User Name"
+            android:text="Full Name"
+            android:textColor="@color/black"
             android:textSize="24sp" />
 
         <TextView
-            android:id="@+id/textViewUserTitle"
+            android:id="@+id/textViewNickname"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:text="User title"
+            android:text="Nickname"
+            android:textColor="@color/black"
+            android:textSize="20sp" />
+
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
+
+        <TextView
+            android:id="@+id/textViewRoles"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="3dp"
+            android:text="Roles"
             android:textSize="18sp" />
+
+        <TextView
+            android:id="@+id/textViewUserId"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="3dp"
+            android:layout_marginBottom="3dp"
+            android:text="UserID" />
 </LinearLayout>

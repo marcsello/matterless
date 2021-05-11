@@ -41,6 +41,8 @@ class HomeActivity : AppCompatActivity(), HomeScreen,
         setContentView(R.layout.activity_home)
         injector.inject(this)
 
+        title = "Loading..."
+
         val toolbar: Toolbar = findViewById(R.id.toolbar)
         setSupportActionBar(toolbar)
 
