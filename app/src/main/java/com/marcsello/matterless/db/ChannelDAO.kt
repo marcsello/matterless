@@ -10,6 +10,9 @@ interface ChannelDAO {
     @Query("SELECT * FROM channels WHERE team_id = :teamId ORDER BY last_read_at DESC")
     suspend fun getChannelsOfTeam(teamId: String): List<Channel>
 
+    @Query("SELECT * FROM channels WHERE team_id = :teamId AND type IN ('O','P') ORDER BY last_read_at DESC")
+    suspend fun getRealChannelsOfTeam(teamId: String): List<Channel>
+
     @Query("SELECT * FROM channels WHERE last_post_at > :since ORDER BY last_read_at DESC")
     suspend fun getChannelsUpdatedSince(since: Long): List<Channel>
 
@@ -23,7 +26,7 @@ interface ChannelDAO {
     @Query("SELECT * FROM channels WHERE id = :channelId")
     suspend fun getChannel(channelId: String): List<ChannelWithPosts>
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertChannels(vararg channels: Channel)
 
     @Update

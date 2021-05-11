@@ -14,14 +14,14 @@ interface ChannelsApi {
         @Header("Authorization") authorisation: String,
         @Query("page") page: Int?,
         @Query("per_page") perPage: Int?
-    ): Call<Channels>
+    ): Call<List<Channels>>
 
     @GET("users/{user_id}/teams/{team_id}/channels")
     fun getChannelsForUser(
         @Header("Authorization") authorisation: String,
         @Path("user_id") userId: String,
         @Path("team_id") teamId: String
-    ): Call<Channels>
+    ): Call<List<Channels>>
 
     @GET("teams/{team_id}/channels")
     fun getChannelsForTeam(
@@ -29,6 +29,6 @@ interface ChannelsApi {
         @Path("team_id") teamId: String,
         @Query("page") page: Int?,
         @Query("per_page") perPage: Int?
-    ): Call<Channels>
+    ): Call<List<Channels>>
 
 }

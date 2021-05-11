@@ -33,7 +33,7 @@ class HomePresenter @Inject constructor(
         }
 
         executor.execute {
-
+            mattermostApiInteractor.loadChannels("me", id)
         }
 
     }
@@ -61,15 +61,14 @@ class HomePresenter @Inject constructor(
     fun onEventMainThread(event: TeamsLoadedEvent) {
         runBlocking {
             val last_team_id = localDataInteractor.getLastTeamId()
-            screen?.teamsLoaded(event.teams,last_team_id)
+            screen?.teamsLoaded(event.teams, last_team_id)
         }
-                // After loading teams, the activity should call change team,
-                // This is to ensure, that teams won't be loaded when there is no living activity that requires this
+
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onEventMainThread(event: ChannelsLoadedEvent) {
-
+        screen?.channelsLoaded(event.channels, event.teamId)
     }
 
 

@@ -14,5 +14,5 @@ data class Channels (
     @SerializedName("name")
     var name: String? = null,
     @SerializedName("last_post_at")
-    var lastPostat: Int? = null
+    var lastPostat: Long? = null
 )

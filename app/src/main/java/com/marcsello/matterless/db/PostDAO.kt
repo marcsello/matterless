@@ -24,7 +24,7 @@ interface PostDAO {
     @Query("SELECT * FROM posts WHERE root_id = :rootId OR id = root_id ORDER BY create_at ASC")
     suspend fun getAllPostsOfThread(rootId: String): List<PostWithUser>
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertPosts(vararg post: Post)
 
     @Delete

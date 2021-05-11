@@ -2,17 +2,18 @@ package com.marcsello.matterless.interactor
 
 import android.content.Context
 import android.util.Log
-import com.marcsello.matterless.db.AppDatabase
-import com.marcsello.matterless.db.Server
-import com.marcsello.matterless.db.Team
-import com.marcsello.matterless.db.User
+import com.marcsello.matterless.db.*
+import com.marcsello.matterless.events.ChannelsLoadedEvent
 import com.marcsello.matterless.events.LoginResultEvent
 import com.marcsello.matterless.events.TeamsLoadedEvent
 import com.marcsello.matterless.events.UserInfoLoaded
+import com.marcsello.matterless.model.Channels
 import com.marcsello.matterless.model.LoginCredentials
 import com.marcsello.matterless.model.Teams
+import com.marcsello.matterless.network.ChannelsApi
 import com.marcsello.matterless.network.TeamsApi
 import com.marcsello.matterless.network.UsersApi
+import com.marcsello.matterless.ui.home.ChannelData
 import com.marcsello.matterless.ui.home.TeamData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -29,6 +30,7 @@ class MattermostApiInteractor @Inject constructor(private val context: Context) 
     private val dbInstance = AppDatabase.getInstance(context)
     private lateinit var retrofit: Retrofit
     private lateinit var token: String
+    private lateinit var me_id: String
     private val httpClient = OkHttpClient.Builder().build()
 
     init {
@@ -56,7 +58,34 @@ class MattermostApiInteractor @Inject constructor(private val context: Context) 
                     .addConverterFactory(GsonConverterFactory.create())
                     .build()
 
-                // TODO: Test if token is valid
+                val usersApi = retrofit.create(UsersApi::class.java)
+
+                // Test token
+
+                val call = usersApi.getUserInfo(token, "me")
+
+                try {
+                    val response = call.execute()
+
+                    if (response.code() != 200) {
+                        Log.println(
+                            Log.INFO,
+                            "MattermostApiInteractor",
+                            "Couldn't autologin: ${response.code()}"
+                        )
+                        return@runBlocking
+                    }
+
+                    me_id = response.body()?.id!!
+
+                } catch (e: Exception) {
+                    Log.println(
+                        Log.INFO,
+                        "MattermostApiInteractor",
+                        "Couldn't autologin: " + e.toString()
+                    )
+                    return@runBlocking
+                }
 
                 EventBus.getDefault().post(LoginResultEvent(true, servers[0].loginId, null))
 
@@ -86,6 +115,7 @@ class MattermostApiInteractor @Inject constructor(private val context: Context) 
                 }
 
                 token = "Bearer " + response.headers()["Token"]!! // Hope it does not catch on fire
+                me_id = response.body()?.id!!
 
             } catch (e: Exception) {
                 EventBus.getDefault()
@@ -117,11 +147,21 @@ class MattermostApiInteractor @Inject constructor(private val context: Context) 
         }
     }
 
+    fun localResolveMe(userId: String): String {
+        if (userId == "me") {
+            return me_id
+        } else {
+            return userId
+        }
+    }
+
 
     fun loadUserInfo(userId: String) {
         runBlocking {
 
-            val user = dbInstance.userDAO().getUserById(userId)
+            val userIdResolved = localResolveMe(userId)
+
+            val user = dbInstance.userDAO().getUserById(userIdResolved)
 
             if (user != null) {
 
@@ -140,7 +180,7 @@ class MattermostApiInteractor @Inject constructor(private val context: Context) 
 
                 val usersApi = retrofit.create(UsersApi::class.java)
 
-                val call = usersApi.getUserInfo(token, userId)
+                val call = usersApi.getUserInfo(token, userIdResolved)
 
                 try {
                     val response = call.execute()
@@ -190,26 +230,28 @@ class MattermostApiInteractor @Inject constructor(private val context: Context) 
         }
     }
 
-    fun convertTeamListTeamDataArray(teams: List<Team>):ArrayList<TeamData> {
+    fun convertTeamListTeamDataArray(teams: List<Team>): ArrayList<TeamData> {
         // TODO: nemá
         val list = ArrayList<TeamData>(teams.size)
         teams.forEach {
-            list.add(TeamData(it.id,it.name))
+            list.add(TeamData(it.id, it.displayName))
         }
         return list
     }
 
-    fun convertTeamsListTeamDataArray(teams: List<Teams>):ArrayList<TeamData> {
+    fun convertTeamsListTeamDataArray(teams: List<Teams>): ArrayList<TeamData> {
         // TODO: nemá
         val list = ArrayList<TeamData>(teams.size)
         teams.forEach {
-            list.add(TeamData(it.id!!,it.displayName!!))
+            list.add(TeamData(it.id!!, it.displayName!!))
         }
         return list
     }
 
-    fun loadTeams(userId:String) {
+    fun loadTeams(userId: String) {
         runBlocking {
+
+            val userIdResolved = localResolveMe(userId)
 
             val teams = dbInstance.teamDAO().getTeams()
 
@@ -225,7 +267,7 @@ class MattermostApiInteractor @Inject constructor(private val context: Context) 
 
                 val teamsApi = retrofit.create(TeamsApi::class.java)
 
-                val call = teamsApi.getTeamsForUser(token, userId, null, null)
+                val call = teamsApi.getTeamsForUser(token, userIdResolved, null, null)
 
                 try {
                     val response = call.execute()
@@ -266,13 +308,121 @@ class MattermostApiInteractor @Inject constructor(private val context: Context) 
                     )
 
                 } catch (e: Exception) {
-                    Log.println(Log.WARN, "MattermostApi.getUser", e.toString())
+                    Log.println(Log.WARN, "MattermostApi.getTeams", e.toString())
                     return@runBlocking
                 }
 
 
             }
         }
+    }
+
+    fun convertChannelListToChannelDataArray(channels: List<Channel>): ArrayList<ChannelData> {
+        // TODO: nemá
+        val list = ArrayList<ChannelData>(channels.size)
+        channels.forEach {
+            if ((it.type!! == "O") or (it.type!! == "P")) {
+                list.add(ChannelData(it.id, it.name, it.lastPostAt.toString(), false))
+            }
+        }
+        return list
+    }
+
+    fun convertChannelsListToChannelDataArray(channels: List<Channels>): ArrayList<ChannelData> {
+        // TODO: nemá
+        val list = ArrayList<ChannelData>(channels.size)
+        channels.forEach {
+            if ((it.type!! == "O") or (it.type!! == "P")) {
+                list.add(ChannelData(it.id!!, it.displayName!!, it.lastPostat.toString(), false))
+            }
+        }
+        return list
+    }
+
+    fun loadChannels(userId: String, teamId: String) {
+        runBlocking {
+
+            val userIdResolved = localResolveMe(userId)
+
+            val channels = dbInstance.channelDAO().getRealChannelsOfTeam(teamId)
+
+
+            if (!channels.isNullOrEmpty()) {
+
+                EventBus.getDefault().post(
+                    ChannelsLoadedEvent(
+                        teamId,
+                        convertChannelListToChannelDataArray(channels)
+                    )
+                )
+
+
+            } else {
+
+                val channelsApi = retrofit.create(ChannelsApi::class.java)
+
+                val call = channelsApi.getChannelsForUser(token, userIdResolved, teamId)
+
+                try {
+                    val response = call.execute()
+
+                    if (!response.isSuccessful) {
+                        Log.println(
+                            Log.WARN,
+                            "MattermostApi.getChanne",
+                            "Request unsuccessful ${response.code()}"
+                        )
+                        return@runBlocking
+                    }
+
+                    val channels_live = response.body() ?: return@runBlocking
+
+                    if (channels_live.isNullOrEmpty()) {
+                        Log.println(
+                            Log.WARN,
+                            "MattermostApi.getTeams",
+                            "Empty or null response: ${response.body().toString()}"
+                        )
+                        return@runBlocking
+                    }
+
+                    launch(Dispatchers.IO) {
+                        channels_live.forEach {
+                            if ((it.type!! == "O") or (it.type!! == "P")) {
+                                dbInstance.channelDAO().insertChannels(
+                                    Channel(
+                                        it.id!!,
+                                        it.teamId!!,
+                                        it.type!!,
+                                        it.displayName!!,
+                                        it.name!!,
+                                        it.lastPostat!!,
+                                        null
+                                    )
+                                )
+                            }
+                        }
+                    }
+
+
+                    EventBus.getDefault().post(
+                        ChannelsLoadedEvent(
+                            teamId,
+                            convertChannelsListToChannelDataArray(channels_live)
+                        )
+                    )
+
+                } catch (e: Exception) {
+                    Log.println(Log.WARN, "MattermostApi.getChann", e.toString())
+                    return@runBlocking
+                }
+
+
+            }
+
+
+        }
+
     }
 
 }
