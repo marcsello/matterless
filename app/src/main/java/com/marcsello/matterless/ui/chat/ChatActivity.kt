@@ -38,7 +38,7 @@ class ChatActivity : AppCompatActivity(), ChatScreen {
         recyclerViewChatMessages = findViewById<View>(R.id.recyclerViewChatMessages) as RecyclerView
         recyclerViewChatMessages.adapter = chatListAdapter
         recyclerViewChatMessages.layoutManager =
-            LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+            LinearLayoutManager(this, LinearLayoutManager.VERTICAL, true)
 
         editTextChatMessage = findViewById(R.id.editTextChatMessage)
 
@@ -53,7 +53,7 @@ class ChatActivity : AppCompatActivity(), ChatScreen {
             if (bottom < oldBottom) {
                 recyclerViewChatMessages.postDelayed({
                     recyclerViewChatMessages.smoothScrollToPosition(
-                        (recyclerViewChatMessages.adapter?.itemCount ?: 1) - 1
+                        0
                     )
                 }, 100)
             }
@@ -63,14 +63,16 @@ class ChatActivity : AppCompatActivity(), ChatScreen {
     }
 
 
-    override fun messagesLoaded(messages: ArrayList<ChatMessageData>) {
-        chatListAdapter.setContents(messages)
-        recyclerViewChatMessages.scrollToPosition(chatListAdapter.itemCount - 1);
+    override fun messagesLoaded(messages: ArrayList<ChatMessageData>, channelId:String) {
+        if (channelId == this.channelId) {
+            chatListAdapter.setContents(messages)
+            recyclerViewChatMessages.scrollToPosition(0);
+        }
     }
 
     override fun newMessage(message: ChatMessageData) {
         chatListAdapter.addNewItem(message)
-        recyclerViewChatMessages.scrollToPosition(chatListAdapter.itemCount - 1);
+        recyclerViewChatMessages.scrollToPosition(0);
     }
 
     override fun onStart() {

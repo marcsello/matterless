@@ -1,6 +1,7 @@
 package com.marcsello.matterless.network
 
 import com.marcsello.matterless.model.Posts
+import com.marcsello.matterless.model.PostsWrapper
 import retrofit2.Call
 import retrofit2.http.*
 
@@ -21,11 +22,11 @@ interface PostsApi {
         @Query("after") after: String?,
         @Query("page") page: Int?,
         @Query("per_page") perPage: Int?
-    ): Call<Posts>
+    ): Call<PostsWrapper>
 
     @GET("posts/{post_id}/thread")
     fun getThreadByPost(
         @Header("Authorization") authorisation: String,
         @Path("post_id") postId: String
-    ): Call<Posts>
+    ): Call<PostsWrapper>
 }

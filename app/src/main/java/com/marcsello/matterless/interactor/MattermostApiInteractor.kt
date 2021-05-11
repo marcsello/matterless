@@ -3,16 +3,16 @@ package com.marcsello.matterless.interactor
 import android.content.Context
 import android.util.Log
 import com.marcsello.matterless.db.*
-import com.marcsello.matterless.events.ChannelsLoadedEvent
-import com.marcsello.matterless.events.LoginResultEvent
-import com.marcsello.matterless.events.TeamsLoadedEvent
-import com.marcsello.matterless.events.UserInfoLoaded
+import com.marcsello.matterless.events.*
 import com.marcsello.matterless.model.Channels
 import com.marcsello.matterless.model.LoginCredentials
+import com.marcsello.matterless.model.Posts
 import com.marcsello.matterless.model.Teams
 import com.marcsello.matterless.network.ChannelsApi
+import com.marcsello.matterless.network.PostsApi
 import com.marcsello.matterless.network.TeamsApi
 import com.marcsello.matterless.network.UsersApi
+import com.marcsello.matterless.ui.chat.ChatMessageData
 import com.marcsello.matterless.ui.home.ChannelData
 import com.marcsello.matterless.ui.home.TeamData
 import kotlinx.coroutines.Dispatchers
@@ -424,5 +424,62 @@ class MattermostApiInteractor @Inject constructor(private val context: Context) 
         }
 
     }
+
+    fun convertPostsMapToChatMessageDataArray(order:List<String>, posts: Map<String, Posts>): ArrayList<ChatMessageData> {
+        // TODO: nemá
+        val list = ArrayList<ChatMessageData>(order.size)
+        order.forEach {
+            val post = posts[it]!!
+            list.add(ChatMessageData(post.userId!!,post.userId!!,post.message!!,post.createAt!!.toString()))
+        }
+        return list
+    }
+
+
+    fun loadPostsInChannel(channelId: String) {
+
+        val postsApi = retrofit.create(PostsApi::class.java)
+
+        val call = postsApi.getPostsInChannel(token, channelId, null, null, null, null)
+
+        try {
+            val response = call.execute()
+
+            if (!response.isSuccessful) {
+                Log.println(
+                    Log.WARN,
+                    "MattermostApi.getPosts",
+                    "Request unsuccessful ${response.code()}"
+                )
+                return
+            }
+
+            val posts_live = response.body() ?: return
+
+            if (posts_live.posts.isNullOrEmpty()) {
+                Log.println(
+                    Log.WARN,
+                    "MattermostApi.getPosts",
+                    "Empty or null response: ${response.body().toString()}"
+                )
+                return
+            }
+
+
+            EventBus.getDefault().post(
+                PostsLoadedEvent(
+                    channelId,
+                    convertPostsMapToChatMessageDataArray(posts_live.order!!, posts_live.posts!!)
+                )
+            )
+
+        } catch (e: Exception) {
+            Log.println(Log.WARN, "MattermostApi.getPosts", e.toString())
+            return
+        }
+
+
+    }
+
 
 }

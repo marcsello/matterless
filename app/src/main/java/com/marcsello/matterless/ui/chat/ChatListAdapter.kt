@@ -87,8 +87,8 @@ class ChatListAdapter : RecyclerView.Adapter<ChatListAdapter.ViewHolder>() {
     }
 
     fun addNewItem(message: ChatMessageData) {
-        chatMessages.add(message)
-        notifyItemInserted(chatMessages.size - 1)
+        chatMessages.add(0, message)
+        notifyItemInserted(0)
     }
 
 }
