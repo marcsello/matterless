@@ -23,7 +23,10 @@ import org.greenrobot.eventbus.EventBus
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.lang.Exception
+import java.text.SimpleDateFormat
+import java.util.*
 import javax.inject.Inject
+import kotlin.collections.ArrayList
 
 class MattermostApiInteractor @Inject constructor(private val context: Context) {
 
@@ -32,6 +35,8 @@ class MattermostApiInteractor @Inject constructor(private val context: Context) 
     private lateinit var token: String
     private lateinit var me_id: String
     private val httpClient = OkHttpClient.Builder().build()
+
+    val sdf = SimpleDateFormat("yyyy. MM. dd. hh:mm")
 
     init {
         runBlocking {
@@ -322,7 +327,8 @@ class MattermostApiInteractor @Inject constructor(private val context: Context) 
         val list = ArrayList<ChannelData>(channels.size)
         channels.forEach {
             if ((it.type!! == "O") or (it.type!! == "P")) {
-                list.add(ChannelData(it.id, it.name, it.lastPostAt.toString(), false))
+                val formattedTimestamp = sdf.format(Date(it.lastPostAt!!))
+                list.add(ChannelData(it.id, it.name, formattedTimestamp, false))
             }
         }
         return list
@@ -333,7 +339,8 @@ class MattermostApiInteractor @Inject constructor(private val context: Context) 
         val list = ArrayList<ChannelData>(channels.size)
         channels.forEach {
             if ((it.type!! == "O") or (it.type!! == "P")) {
-                list.add(ChannelData(it.id!!, it.displayName!!, it.lastPostat.toString(), false))
+                val formattedTimestamp = sdf.format(Date(it.lastPostat!!))
+                list.add(ChannelData(it.id!!, it.displayName!!, formattedTimestamp, false))
             }
         }
         return list
@@ -425,12 +432,15 @@ class MattermostApiInteractor @Inject constructor(private val context: Context) 
 
     }
 
+
+
     fun convertPostsMapToChatMessageDataArray(order:List<String>, posts: Map<String, Posts>): ArrayList<ChatMessageData> {
         // TODO: nemá
         val list = ArrayList<ChatMessageData>(order.size)
         order.forEach {
             val post = posts[it]!!
-            list.add(ChatMessageData(post.userId!!,post.userId!!,post.message!!,post.createAt!!.toString()))
+            val formattedTimestamp = sdf.format(Date(post.createAt!!))
+            list.add(ChatMessageData(post.userId!!,post.userId!!,post.message!!,formattedTimestamp))
         }
         return list
     }
