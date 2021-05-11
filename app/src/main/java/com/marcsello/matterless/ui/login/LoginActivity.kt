@@ -34,7 +34,7 @@ class LoginActivity : AppCompatActivity(), LoginScreen {
     }
 
     override fun showLoginError(reason: String) {
-        Toast.makeText(this, "Login Falied: $reason", Toast.LENGTH_LONG).show();
+        Toast.makeText(this, "Login Failed: $reason", Toast.LENGTH_LONG).show();
     }
 
     // Ez az ami a screen interfészben van definiálva és a presenter hívogatni tudja, ha kész van valamivel
