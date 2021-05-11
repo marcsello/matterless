@@ -154,7 +154,7 @@ class MattermostApiInteractor @Inject constructor(private val context: Context) 
         }
     }
 
-    fun localResolveMe(userId: String): String {
+    private fun localResolveMe(userId: String): String {
         if (userId == "me") {
             return me_id
         } else {
@@ -162,6 +162,51 @@ class MattermostApiInteractor @Inject constructor(private val context: Context) 
         }
     }
 
+    suspend fun getUserData(userId: String): User? {
+        val userIdResolved = localResolveMe(userId)
+        val user = dbInstance.userDAO().getUserById(userIdResolved)
+
+        if (user != null) {
+            return user
+        } else {
+            val usersApi = retrofit.create(UsersApi::class.java)
+            val call = usersApi.getUserInfo(token, userIdResolved)
+
+            try {
+                val response = call.execute()
+
+                if (!response.isSuccessful) {
+                    Log.println(
+                        Log.WARN,
+                        "MattermostApi.getUser",
+                        "Request unsuccessful ${response.code()}"
+                    )
+                    return null
+                }
+
+                val user_live = response.body() ?: return null
+
+                val user = User(
+                    user_live.id!!,
+                    user_live.username!!,
+                    user_live.firstName!!,
+                    user_live.lastName!!,
+                    user_live.nickname!!,
+                    user_live.roles!!
+                )
+
+                dbInstance.userDAO().insertUsers(user)
+
+                return user
+
+            } catch (e: Exception) {
+                Log.println(Log.WARN, "MattermostApi.getUser", e.toString())
+                return null
+            }
+
+        }
+
+    }
 
     fun loadUserInfo(userId: String) {
         runBlocking {
@@ -237,7 +282,7 @@ class MattermostApiInteractor @Inject constructor(private val context: Context) 
         }
     }
 
-    fun convertTeamListTeamDataArray(teams: List<Team>): ArrayList<TeamData> {
+    private fun convertTeamListTeamDataArray(teams: List<Team>): ArrayList<TeamData> {
         // TODO: nemá
         val list = ArrayList<TeamData>(teams.size)
         teams.forEach {
@@ -246,7 +291,7 @@ class MattermostApiInteractor @Inject constructor(private val context: Context) 
         return list
     }
 
-    fun convertTeamsListTeamDataArray(teams: List<Teams>): ArrayList<TeamData> {
+    private fun convertTeamsListTeamDataArray(teams: List<Teams>): ArrayList<TeamData> {
         // TODO: nemá
         val list = ArrayList<TeamData>(teams.size)
         teams.forEach {
@@ -324,19 +369,19 @@ class MattermostApiInteractor @Inject constructor(private val context: Context) 
         }
     }
 
-    fun convertChannelListToChannelDataArray(channels: List<Channel>): ArrayList<ChannelData> {
+    private fun convertChannelListToChannelDataArray(channels: List<Channel>): ArrayList<ChannelData> {
         // TODO: nemá
         val list = ArrayList<ChannelData>(channels.size)
         channels.forEach {
-            if ((it.type!! == "O") or (it.type!! == "P")) {
-                val formattedTimestamp = sdf.format(Date(it.lastPostAt!!))
+            if ((it.type == "O") or (it.type == "P")) {
+                val formattedTimestamp = sdf.format(Date(it.lastPostAt))
                 list.add(ChannelData(it.id, it.name, formattedTimestamp, false))
             }
         }
         return list
     }
 
-    fun convertChannelsListToChannelDataArray(channels: List<Channels>): ArrayList<ChannelData> {
+    private fun convertChannelsListToChannelDataArray(channels: List<Channels>): ArrayList<ChannelData> {
         // TODO: nemá
         val list = ArrayList<ChannelData>(channels.size)
         channels.forEach {
@@ -435,14 +480,38 @@ class MattermostApiInteractor @Inject constructor(private val context: Context) 
     }
 
 
-
-    fun convertPostsMapToChatMessageDataArray(order:List<String>, posts: Map<String, Posts>): ArrayList<ChatMessageData> {
+    fun convertPostsMapToChatMessageDataArray(
+        order: List<String>,
+        posts: Map<String, Posts>
+    ): ArrayList<ChatMessageData> {
         // TODO: nemá
         val list = ArrayList<ChatMessageData>(order.size)
         order.forEach {
             val post = posts[it]!!
             val formattedTimestamp = sdf.format(Date(post.createAt!!))
-            list.add(ChatMessageData(post.userId!!,post.userId!!,post.message!!,formattedTimestamp))
+            val userId = post.userId!!
+            var userData: User? = null
+
+            runBlocking {
+                userData = getUserData(userId)
+            }
+
+            var goodName = userId;
+
+            if (!(userData?.nickName.isNullOrEmpty())) {
+                goodName = userData!!.nickName
+            } else if (!(userData?.username.isNullOrEmpty())) {
+                goodName = userData!!.username
+            }
+
+            list.add(
+                ChatMessageData(
+                    goodName,
+                    userId,
+                    post.message!!,
+                    formattedTimestamp
+                )
+            )
         }
         return list
     }
