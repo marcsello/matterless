@@ -1,6 +1,7 @@
 package com.marcsello.matterless.ui
 
 import android.content.Context
+import com.marcsello.matterless.interactor.MattermostApiInteractor
 import com.marcsello.matterless.ui.chat.ChatPresenter
 import com.marcsello.matterless.ui.home.HomePresenter
 import com.marcsello.matterless.ui.login.LoginPresenter
@@ -17,19 +18,23 @@ class UIModule(private val context: Context) {
 
     @Provides
     @Singleton
-    fun loginPresenter() = LoginPresenter()
+    fun loginPresenter(mattermostApiInteractor: MattermostApiInteractor) =
+        LoginPresenter(mattermostApiInteractor)
 
     @Provides
     @Singleton
-    fun homePresenter() = HomePresenter()
+    fun homePresenter(mattermostApiInteractor: MattermostApiInteractor) =
+        HomePresenter(mattermostApiInteractor)
 
     @Provides
     @Singleton
-    fun chatPresenter() = ChatPresenter()
+    fun chatPresenter(mattermostApiInteractor: MattermostApiInteractor) =
+        ChatPresenter(mattermostApiInteractor)
 
     @Provides
     @Singleton
-    fun profilePresenter() = ProfilePresenter()
+    fun profilePresenter(mattermostApiInteractor: MattermostApiInteractor) =
+        ProfilePresenter(mattermostApiInteractor)
 
 
 }

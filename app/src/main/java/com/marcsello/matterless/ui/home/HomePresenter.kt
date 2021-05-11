@@ -1,9 +1,11 @@
 package com.marcsello.matterless.ui.home
 
 import android.util.Log
+import com.marcsello.matterless.interactor.MattermostApiInteractor
 import com.marcsello.matterless.ui.Presenter
+import javax.inject.Inject
 
-class HomePresenter : Presenter<HomeScreen>() {
+class HomePresenter @Inject constructor(private val mattermostApiInteractor: MattermostApiInteractor) : Presenter<HomeScreen>() {
     fun changeTeam(id: String) {
         Log.println(Log.VERBOSE, "HomePresenter", "Changing team to $id")
         // This should load all chat info
