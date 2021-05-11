@@ -13,6 +13,13 @@ interface PostDAO {
     suspend fun getPostsOfChannel(channelId: String): List<PostWithUser>
 
     @Transaction
+    @Query("SELECT * FROM posts WHERE channel_id = :channelId ORDER BY create_at DESC")
+    suspend fun getPostsOfChannelInverted(channelId: String): List<PostWithUser>
+
+    @Query("SELECT * FROM posts WHERE channel_id = :channelId ORDER BY create_at ASC")
+    suspend fun getPostsOfChannelOnly(channelId: String): List<Post>
+
+    @Transaction
     @Query("SELECT * FROM posts WHERE create_at > :since ORDER BY create_at ASC")
     suspend fun getPostsSince(since: Long): List<PostWithUser>
 

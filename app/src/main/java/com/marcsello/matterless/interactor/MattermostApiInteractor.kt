@@ -167,6 +167,7 @@ class MattermostApiInteractor @Inject constructor(private val context: Context) 
         val user = dbInstance.userDAO().getUserById(userIdResolved)
 
         if (user != null) {
+            Log.println(Log.VERBOSE,"MattermostApi.getUserD","$userId = ${user.username} Cache: HIT")
             return user
         } else {
             val usersApi = retrofit.create(UsersApi::class.java)
@@ -197,6 +198,7 @@ class MattermostApiInteractor @Inject constructor(private val context: Context) 
 
                 dbInstance.userDAO().insertUsers(user)
 
+                Log.println(Log.VERBOSE,"MattermostApi.getUserD","$userId = ${user.username} Cache: MISS")
                 return user
 
             } catch (e: Exception) {
@@ -480,7 +482,7 @@ class MattermostApiInteractor @Inject constructor(private val context: Context) 
     }
 
 
-    fun convertPostsMapToChatMessageDataArray(
+    private fun convertPostsMapToChatMessageDataArray(
         order: List<String>,
         posts: Map<String, Posts>
     ): ArrayList<ChatMessageData> {
@@ -517,49 +519,124 @@ class MattermostApiInteractor @Inject constructor(private val context: Context) 
     }
 
 
-    fun loadPostsInChannel(channelId: String) {
+    private fun mikrozas(chatMessages: List<PostWithUser>): ArrayList<ChatMessageData> {
+        // TODO: nemá
+        val list = ArrayList<ChatMessageData>(chatMessages.size)
+        chatMessages.forEach {
+            val formattedTimestamp = sdf.format(Date(it.post.createAt))
+            val userId = it.post.userId
+            var userData: User? = it.user
 
-        val postsApi = retrofit.create(PostsApi::class.java)
 
-        val call = postsApi.getPostsInChannel(token, channelId, null, null, null, null)
-
-        try {
-            val response = call.execute()
-
-            if (!response.isSuccessful) {
-                Log.println(
-                    Log.WARN,
-                    "MattermostApi.getPosts",
-                    "Request unsuccessful ${response.code()}"
-                )
-                return
+            if (userData == null) {
+                runBlocking {
+                    userData = getUserData(userId)
+                }
             }
 
-            val posts_live = response.body() ?: return
+            var goodName = userId;
 
-            if (posts_live.posts.isNullOrEmpty()) {
-                Log.println(
-                    Log.WARN,
-                    "MattermostApi.getPosts",
-                    "Empty or null response: ${response.body().toString()}"
-                )
-                return
+            if (!(userData?.nickName.isNullOrEmpty())) {
+                goodName = userData!!.nickName
+            } else if (!(userData?.username.isNullOrEmpty())) {
+                goodName = userData!!.username
             }
 
-
-            EventBus.getDefault().post(
-                PostsLoadedEvent(
-                    channelId,
-                    convertPostsMapToChatMessageDataArray(posts_live.order!!, posts_live.posts!!)
+            list.add(
+                ChatMessageData(
+                    goodName,
+                    userId,
+                    it.post.message,
+                    formattedTimestamp
                 )
             )
-
-        } catch (e: Exception) {
-            Log.println(Log.WARN, "MattermostApi.getPosts", e.toString())
-            return
         }
+        return list
+    }
 
 
+    fun loadPostsInChannel(channelId: String) {
+        runBlocking {
+
+            launch(Dispatchers.IO) {
+                val posts = dbInstance.postDAO().getPostsOfChannelInverted(channelId)
+
+                if (posts.isNullOrEmpty()) {
+                    return@launch
+                }
+
+                EventBus.getDefault().post(
+                    PostsLoadedEvent(
+                        channelId,
+                        true,
+                        mikrozas(posts)
+                    )
+                )
+
+            }
+
+
+            val postsApi = retrofit.create(PostsApi::class.java)
+
+            val call = postsApi.getPostsInChannel(token, channelId, null, null, null, null)
+
+            try {
+                val response = call.execute()
+
+                if (!response.isSuccessful) {
+                    Log.println(
+                        Log.WARN,
+                        "MattermostApi.getPosts",
+                        "Request unsuccessful ${response.code()}"
+                    )
+                    return@runBlocking
+                }
+
+                val posts_live = response.body() ?: return@runBlocking
+
+                if (posts_live.posts.isNullOrEmpty()) {
+                    Log.println(
+                        Log.WARN,
+                        "MattermostApi.getPosts",
+                        "Empty or null response: ${response.body().toString()}"
+                    )
+                    return@runBlocking
+                }
+
+                launch(Dispatchers.IO) {
+                    posts_live.order?.forEach {
+                        dbInstance.postDAO().insertPosts(
+                            Post(
+                                it,
+                                posts_live.posts!![it]!!.createAt!!,
+                                posts_live.posts!![it]!!.userId!!,
+                                posts_live.posts!![it]!!.channelId!!,
+                                posts_live.posts!![it]!!.rootId,
+                                posts_live.posts!![it]!!.message!!,
+                                posts_live.posts!![it]!!.type!!
+                            )
+                        )
+                    }
+                }
+
+
+                EventBus.getDefault().post(
+                    PostsLoadedEvent(
+                        channelId,
+                        false,
+                        convertPostsMapToChatMessageDataArray(
+                            posts_live.order!!,
+                            posts_live.posts!!
+                        )
+                    )
+                )
+
+            } catch (e: Exception) {
+                Log.println(Log.WARN, "MattermostApi.getPosts", e.toString())
+                return@runBlocking
+            }
+
+        }
     }
 
 

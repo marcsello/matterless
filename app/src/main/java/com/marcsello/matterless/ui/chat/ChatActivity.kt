@@ -2,6 +2,7 @@ package com.marcsello.matterless.ui.chat
 
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
@@ -23,6 +24,8 @@ class ChatActivity : AppCompatActivity(), ChatScreen {
     private lateinit var editTextChatMessage: EditText
     private lateinit var channelId: String
     private lateinit var recyclerViewChatMessages: RecyclerView
+
+    private var dataIsLive = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -63,10 +66,18 @@ class ChatActivity : AppCompatActivity(), ChatScreen {
     }
 
 
-    override fun messagesLoaded(messages: ArrayList<ChatMessageData>, channelId:String) {
+    override fun messagesLoaded(messages: ArrayList<ChatMessageData>, cached: Boolean, channelId:String) {
         if (channelId == this.channelId) {
+
+            if (dataIsLive and cached) {
+                // A betöltött data újabb, szóval ez nemkell
+                return
+            }
+
+            Log.println(Log.VERBOSE,"ChatActivity.messagesLo", "Betoltott uzenetek cachelve: $cached")
             chatListAdapter.setContents(messages)
-            recyclerViewChatMessages.scrollToPosition(0);
+            //recyclerViewChatMessages.scrollToPosition(0);
+            dataIsLive = !cached
         }
     }
 

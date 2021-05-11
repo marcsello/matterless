@@ -27,7 +27,7 @@ class ChatPresenter @Inject constructor(private val mattermostApiInteractor: Mat
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onEventMainThread(event: PostsLoadedEvent) {
-        screen?.messagesLoaded(event.posts, event.channelId)
+        screen?.messagesLoaded(event.posts, event.cached, event.channelId)
     }
 
 }
