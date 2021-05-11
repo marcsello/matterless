@@ -1,11 +1,16 @@
 package com.marcsello.matterless.ui.profile
 
-import androidx.appcompat.app.AppCompatActivity
+import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.view.View
+import android.widget.ImageView
 import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
 import com.marcsello.matterless.R
 import com.marcsello.matterless.injector
+import java.io.File
 import javax.inject.Inject
+
 
 class ProfileActivity : AppCompatActivity(), ProfileScreen {
 
@@ -51,6 +56,14 @@ class ProfileActivity : AppCompatActivity(), ProfileScreen {
             title = username
             findViewById<TextView>(R.id.textViewRoles).text = "Roles: $roles"
             findViewById<TextView>(R.id.textViewUserId).text = "Internal ID: $id"
+        }
+    }
+
+    override fun profilePictureLoaded(f: File) {
+        if (f.exists()) {
+            val profileBitmap = BitmapFactory.decodeFile(f.absolutePath)
+            val imageProfile: ImageView = findViewById<View>(R.id.imageProfile) as ImageView
+            imageProfile.setImageBitmap(profileBitmap)
         }
     }
 

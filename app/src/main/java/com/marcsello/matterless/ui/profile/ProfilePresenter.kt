@@ -1,6 +1,7 @@
 package com.marcsello.matterless.ui.profile
 
 import com.marcsello.matterless.events.UserInfoLoaded
+import com.marcsello.matterless.events.UserProfilePictureReady
 import com.marcsello.matterless.interactor.MattermostApiInteractor
 import com.marcsello.matterless.ui.Presenter
 import kotlinx.coroutines.Dispatchers
@@ -20,6 +21,9 @@ class ProfilePresenter @Inject constructor(private val mattermostApiInteractor: 
         executor.execute {
             mattermostApiInteractor.loadUserInfo(userId)
         }
+        executor.execute {
+            mattermostApiInteractor.downloadProfilePicture(userId)
+        }
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -32,6 +36,11 @@ class ProfilePresenter @Inject constructor(private val mattermostApiInteractor: 
             event.nickname,
             event.roles
         )
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onEventMainThread(event: UserProfilePictureReady) {
+        screen?.profilePictureLoaded(event.f)
     }
 
 }

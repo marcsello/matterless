@@ -8,7 +8,7 @@
     android:orientation="vertical">
 
         <ImageView
-            android:id="@+id/imageView2"
+            android:id="@+id/imageProfile"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="20dp"

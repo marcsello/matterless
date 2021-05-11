@@ -2,6 +2,7 @@ package com.marcsello.matterless.network
 
 import com.marcsello.matterless.model.LoginCredentials
 import com.marcsello.matterless.model.Users
+import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.http.*
 
@@ -22,4 +23,12 @@ interface UsersApi {
         @Header("Authorization") authorisation: String,
         @Path("user_id") userId: String
     ): Call<Users>
+
+    @GET("users/{user_id}/image")
+    fun getUserImage(
+        @Header("Authorization") authorisation: String,
+        @Path("user_id") userId: String
+    ): Call<ResponseBody>
+
+
 }

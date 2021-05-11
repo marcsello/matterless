@@ -1,7 +1,6 @@
 package com.marcsello.matterless.interactor
 
 import android.content.Context
-import android.provider.ContactsContract
 import android.util.Log
 import com.marcsello.matterless.db.*
 import com.marcsello.matterless.events.*
@@ -17,14 +16,19 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
+import okhttp3.ResponseBody
 import org.greenrobot.eventbus.EventBus
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import java.lang.Exception
+import java.io.*
 import java.text.SimpleDateFormat
 import java.util.*
 import javax.inject.Inject
 import kotlin.collections.ArrayList
+
 
 class MattermostApiInteractor @Inject constructor(private val context: Context) {
 
@@ -41,7 +45,7 @@ class MattermostApiInteractor @Inject constructor(private val context: Context) 
             dbInstance.postDAO().deleteAllPosts()
             dbInstance.channelDAO().deleteAllChannles()
             dbInstance.teamDAO().deleteAllTeams()
-            Log.println(Log.INFO,"MattermostApi","Startup clean performed")
+            Log.println(Log.INFO, "MattermostApi", "Startup clean performed")
         }
     }
 
@@ -91,7 +95,11 @@ class MattermostApiInteractor @Inject constructor(private val context: Context) 
                     return@runBlocking
                 }
 
-                Log.println(Log.INFO,"MattermostApi","Saved token is still valid, performing login")
+                Log.println(
+                    Log.INFO,
+                    "MattermostApi",
+                    "Saved token is still valid, performing login"
+                )
                 EventBus.getDefault().post(LoginResultEvent(true, servers[0].loginId, null))
 
             }
@@ -136,7 +144,7 @@ class MattermostApiInteractor @Inject constructor(private val context: Context) 
                 dbInstance.serverDAO().insertServers(s)
             }
 
-            Log.println(Log.INFO,"MattermostApi","Login successful")
+            Log.println(Log.INFO, "MattermostApi", "Login successful")
             EventBus.getDefault().post(LoginResultEvent(true, username, null))
 
         }
@@ -700,5 +708,81 @@ class MattermostApiInteractor @Inject constructor(private val context: Context) 
         }
     }
 
+    fun downloadProfilePicture(userId: String) {
+        val userIdResolved = localResolveMe(userId)
+        val usersApi = retrofit.create(UsersApi::class.java)
 
+        val call = usersApi.getUserImage(token, userIdResolved)
+
+
+        call.enqueue(object : Callback<ResponseBody> {
+            override fun onFailure(call: Call<ResponseBody>?, t: Throwable?) {
+                Log.e("MattermostApi.downloadP", "call failed: $t")
+            }
+
+            override fun onResponse(call: Call<ResponseBody>?, response: Response<ResponseBody>?) {
+                if (response!!.isSuccessful) {
+                    Log.v("MattermostApi.downloadP", "Requested profile pic for: $userId")
+
+                    val outputFile = File(context.externalCacheDir, userId)
+
+                    if (!outputFile.exists()) {
+                        try {
+                            writeUserProfilePicture(response.body()!!, outputFile)
+                        } catch (e:Exception) {
+                            Log.e("MattermostApi.downloadP", "Download failed: $e")
+                            return
+                        }
+                        Log.v("MattermostApi.downloadP", "Download successful")
+                    } else {
+                        Log.v("MattermostApi.downloadP", "File was already downloaded")
+                    }
+
+                    EventBus.getDefault().post(
+                        UserProfilePictureReady(
+                            userId,
+                            outputFile
+                        )
+                    )
+
+                } else {
+                    Log.w(
+                        "MattermostApi.downloadP",
+                        "File download unsuccessful: ${response.code()}"
+                    )
+                }
+            }
+
+        })
+
+    }
+
+    private fun writeUserProfilePicture(body: ResponseBody, outputFile:File) {
+
+        val inputStream: InputStream = body.byteStream()
+        val outputStream: OutputStream = FileOutputStream(outputFile)
+
+        try {
+            val fileReader = ByteArray(4096)
+            //val fileSize = body.contentLength()
+            var fileSizeDownloaded: Long = 0
+
+            while (true) {
+                val read: Int = inputStream.read(fileReader)
+                if (read == -1) {
+                    break
+                }
+                outputStream.write(fileReader, 0, read)
+                fileSizeDownloaded += read.toLong()
+            }
+
+            outputStream.flush()
+            return
+
+        } finally {
+            inputStream.close()
+            outputStream.close()
+
+        }
+    }
 }
