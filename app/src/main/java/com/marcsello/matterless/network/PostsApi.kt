@@ -1,5 +1,6 @@
 package com.marcsello.matterless.network
 
+import com.marcsello.matterless.model.NewPost
 import com.marcsello.matterless.model.Posts
 import com.marcsello.matterless.model.PostsWrapper
 import retrofit2.Call
@@ -9,9 +10,8 @@ interface PostsApi {
 
     @POST("posts")
     fun createPost(
-        @Field("channel_id") channelId: String,
-        @Field("message") message: String,
-        @Field("root_id") rootId: String?
+        @Header("Authorization") authorisation: String,
+        @Body newPost: NewPost
     ): Call<Posts>
 
     @GET("channels/{channel_id}/posts")

@@ -1,7 +1,7 @@
 package com.marcsello.matterless.ui.chat
 
+import com.marcsello.matterless.events.PostCreatedEvent
 import com.marcsello.matterless.events.PostsLoadedEvent
-import com.marcsello.matterless.events.UserInfoLoaded
 import com.marcsello.matterless.interactor.MattermostApiInteractor
 import com.marcsello.matterless.ui.Presenter
 import org.greenrobot.eventbus.Subscribe
@@ -15,8 +15,9 @@ class ChatPresenter @Inject constructor(private val mattermostApiInteractor: Mat
     private var executor = Executors.newFixedThreadPool(1)
 
     fun sendMessage(channel_id: String, message: String) {
-
-        screen?.newMessage(ChatMessageData("Marcsello", "marcsello", message, "Now"))
+        executor.execute {
+            mattermostApiInteractor.createPost(channel_id, message)
+        }
     }
 
     fun loadChatData(channel_id: String) {
@@ -28,6 +29,11 @@ class ChatPresenter @Inject constructor(private val mattermostApiInteractor: Mat
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onEventMainThread(event: PostsLoadedEvent) {
         screen?.messagesLoaded(event.posts, event.cached, event.channelId)
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onEventMainThread(event: PostCreatedEvent) {
+        screen?.newMessage(event.post)
     }
 
 }

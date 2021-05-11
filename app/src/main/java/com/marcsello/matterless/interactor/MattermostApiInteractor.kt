@@ -1,13 +1,11 @@
 package com.marcsello.matterless.interactor
 
 import android.content.Context
+import android.provider.ContactsContract
 import android.util.Log
 import com.marcsello.matterless.db.*
 import com.marcsello.matterless.events.*
-import com.marcsello.matterless.model.Channels
-import com.marcsello.matterless.model.LoginCredentials
-import com.marcsello.matterless.model.Posts
-import com.marcsello.matterless.model.Teams
+import com.marcsello.matterless.model.*
 import com.marcsello.matterless.network.ChannelsApi
 import com.marcsello.matterless.network.PostsApi
 import com.marcsello.matterless.network.TeamsApi
@@ -167,7 +165,11 @@ class MattermostApiInteractor @Inject constructor(private val context: Context) 
         val user = dbInstance.userDAO().getUserById(userIdResolved)
 
         if (user != null) {
-            Log.println(Log.VERBOSE,"MattermostApi.getUserD","$userId = ${user.username} Cache: HIT")
+            Log.println(
+                Log.VERBOSE,
+                "MattermostApi.getUserD",
+                "$userId = ${user.username} Cache: HIT"
+            )
             return user
         } else {
             val usersApi = retrofit.create(UsersApi::class.java)
@@ -198,7 +200,11 @@ class MattermostApiInteractor @Inject constructor(private val context: Context) 
 
                 dbInstance.userDAO().insertUsers(user)
 
-                Log.println(Log.VERBOSE,"MattermostApi.getUserD","$userId = ${user.username} Cache: MISS")
+                Log.println(
+                    Log.VERBOSE,
+                    "MattermostApi.getUserD",
+                    "$userId = ${user.username} Cache: MISS"
+                )
                 return user
 
             } catch (e: Exception) {
@@ -481,6 +487,18 @@ class MattermostApiInteractor @Inject constructor(private val context: Context) 
 
     }
 
+    private fun friendlyfyUserName(userId: String, nickname: String?, username: String?): String {
+        var goodName = userId;
+
+        if (!(nickname.isNullOrEmpty())) {
+            goodName = nickname
+        } else if (!(username.isNullOrEmpty())) {
+            goodName = username
+        }
+
+        return goodName
+    }
+
 
     private fun convertPostsMapToChatMessageDataArray(
         order: List<String>,
@@ -498,17 +516,9 @@ class MattermostApiInteractor @Inject constructor(private val context: Context) 
                 userData = getUserData(userId)
             }
 
-            var goodName = userId;
-
-            if (!(userData?.nickName.isNullOrEmpty())) {
-                goodName = userData!!.nickName
-            } else if (!(userData?.username.isNullOrEmpty())) {
-                goodName = userData!!.username
-            }
-
             list.add(
                 ChatMessageData(
-                    goodName,
+                    friendlyfyUserName(userId, userData!!.nickName, userData!!.username),
                     userId,
                     post.message!!,
                     formattedTimestamp
@@ -527,24 +537,15 @@ class MattermostApiInteractor @Inject constructor(private val context: Context) 
             val userId = it.post.userId
             var userData: User? = it.user
 
-
             if (userData == null) {
                 runBlocking {
                     userData = getUserData(userId)
                 }
             }
 
-            var goodName = userId;
-
-            if (!(userData?.nickName.isNullOrEmpty())) {
-                goodName = userData!!.nickName
-            } else if (!(userData?.username.isNullOrEmpty())) {
-                goodName = userData!!.username
-            }
-
             list.add(
                 ChatMessageData(
-                    goodName,
+                    friendlyfyUserName(userId, userData!!.nickName, userData!!.username),
                     userId,
                     it.post.message,
                     formattedTimestamp
@@ -633,6 +634,63 @@ class MattermostApiInteractor @Inject constructor(private val context: Context) 
 
             } catch (e: Exception) {
                 Log.println(Log.WARN, "MattermostApi.getPosts", e.toString())
+                return@runBlocking
+            }
+
+        }
+    }
+
+
+    fun createPost(channelId: String, message: String) {
+        runBlocking {
+            val postsApi = retrofit.create(PostsApi::class.java)
+            val call = postsApi.createPost(token, NewPost(channelId, message, null))
+
+            try {
+                val response = call.execute()
+
+                if (!response.isSuccessful) {
+                    Log.println(
+                        Log.WARN,
+                        "MattermostApi.createPos",
+                        "Request unsuccessful ${response.code()}"
+                    )
+                    return@runBlocking
+                }
+
+                val newPost_live = response.body() ?: return@runBlocking
+
+                launch(Dispatchers.IO) {
+                    dbInstance.postDAO().insertPosts(
+                        Post(
+                            newPost_live.id!!,
+                            newPost_live.createAt!!,
+                            newPost_live.userId!!,
+                            newPost_live.channelId!!,
+                            newPost_live.rootId!!,
+                            newPost_live.message!!,
+                            newPost_live.type!!
+                        )
+                    )
+                }
+
+                val sender = getUserData(newPost_live.userId!!)
+
+                EventBus.getDefault().post(
+                    PostCreatedEvent(
+                        channelId,
+                        ChatMessageData(
+                            friendlyfyUserName(sender!!.id, sender.nickName, sender.username),
+                            sender.id,
+                            newPost_live.message!!,
+                            sdf.format(Date(newPost_live.createAt!!))
+                        )
+                    )
+                )
+
+
+            } catch (e: Exception) {
+                Log.println(Log.WARN, "MattermostApi.createPos", e.toString())
                 return@runBlocking
             }
 

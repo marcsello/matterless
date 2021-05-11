@@ -1,6 +1,5 @@
 package com.marcsello.matterless.ui.chat
 
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -47,8 +46,10 @@ class ChatActivity : AppCompatActivity(), ChatScreen {
 
         findViewById<AppCompatImageButton>(R.id.btnSendMessage).setOnClickListener {
             val message = editTextChatMessage.text.toString()
-            chatPresenter.sendMessage(channelId, message)
-            editTextChatMessage.setText("")
+            if (!message.isNullOrEmpty()) {
+                chatPresenter.sendMessage(channelId, message)
+                editTextChatMessage.setText("")
+            }
         }
 
 
@@ -66,7 +67,11 @@ class ChatActivity : AppCompatActivity(), ChatScreen {
     }
 
 
-    override fun messagesLoaded(messages: ArrayList<ChatMessageData>, cached: Boolean, channelId:String) {
+    override fun messagesLoaded(
+        messages: ArrayList<ChatMessageData>,
+        cached: Boolean,
+        channelId: String
+    ) {
         if (channelId == this.channelId) {
 
             if (dataIsLive and cached) {
@@ -74,7 +79,11 @@ class ChatActivity : AppCompatActivity(), ChatScreen {
                 return
             }
 
-            Log.println(Log.VERBOSE,"ChatActivity.messagesLo", "Betoltott uzenetek cachelve: $cached")
+            Log.println(
+                Log.VERBOSE,
+                "ChatActivity.messagesLo",
+                "Betoltott uzenetek cachelve: $cached"
+            )
             chatListAdapter.setContents(messages)
             //recyclerViewChatMessages.scrollToPosition(0);
             dataIsLive = !cached

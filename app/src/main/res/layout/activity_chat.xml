@@ -24,8 +24,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:contentDescription="Create a post!"
             android:ems="10"
             android:gravity="start|top"
+            android:hint="Create a post!"
             android:inputType="textMultiLine" />
 
         <ImageButton
