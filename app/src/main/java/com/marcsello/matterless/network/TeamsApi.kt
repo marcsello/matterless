@@ -5,11 +5,6 @@ import retrofit2.Call
 import retrofit2.http.*
 
 interface TeamsApi {
-    @POST("users/login")
-    fun doLogin(
-        @Field("login_id") loginId: String,
-        @Field("password") password: String
-    ): Call<Teams>
 
     @GET("users/{user_id}/teams")
     fun getTeamsForUser(

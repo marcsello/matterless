@@ -25,11 +25,13 @@ class LoginActivity : AppCompatActivity(), LoginScreen {
         injector.inject(this)
 
         buttonLogin.setOnClickListener {
-            loginPresenter.performLogin(
-                editTextServerAddress.text.toString(),
-                editTextUserName.text.toString(),
-                editTextPassword.text.toString()
-            )
+            lifecycleScope.launch(Dispatchers.Main) {
+                loginPresenter.performLogin(
+                    editTextServerAddress.text.toString(),
+                    editTextUserName.text.toString(),
+                    editTextPassword.text.toString()
+                )
+            }
         }
     }
 
@@ -38,7 +40,7 @@ class LoginActivity : AppCompatActivity(), LoginScreen {
     }
 
     // Ez az ami a screen interfészben van definiálva és a presenter hívogatni tudja, ha kész van valamivel
-    override fun loinSuccessful(username: String) {
+    override fun loginSuccessful(username: String) {
         val intent = Intent(this, HomeActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         intent.putExtra(KEY_USERNAME, username);
@@ -48,6 +50,9 @@ class LoginActivity : AppCompatActivity(), LoginScreen {
     override fun onStart() {
         super.onStart()
         loginPresenter.attachScreen(this)
+        lifecycleScope.launch(Dispatchers.IO) {
+            loginPresenter.tryAutoLogin()
+        }
     }
 
     override fun onStop() {

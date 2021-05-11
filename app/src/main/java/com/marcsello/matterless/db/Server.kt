@@ -11,5 +11,6 @@ data class Server(
     @ColumnInfo(name = "address") var address: String,
     @ColumnInfo(name = "login_id") var loginId: String,
     @ColumnInfo(name = "password") var password: String,
-    @ColumnInfo(name = "session_token") var sessionToken: String?
+    @ColumnInfo(name = "session_token") var sessionToken: String?,
+    @ColumnInfo(name = "last_opened_team_id") var lastOpenedTeamId: String?
 )

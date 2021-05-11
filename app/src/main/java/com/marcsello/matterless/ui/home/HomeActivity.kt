@@ -88,7 +88,7 @@ class HomeActivity : AppCompatActivity(), HomeScreen,
         }
     }
 
-    override fun teamsLoaded(teams: ArrayList<TeamData>, current_team_id: String) {
+    override fun teamsLoaded(teams: ArrayList<TeamData>, current_team_id: String?) {
         this.teams = teams
         navigationView.menu.clear()
 
