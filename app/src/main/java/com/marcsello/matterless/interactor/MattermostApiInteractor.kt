@@ -394,7 +394,7 @@ class MattermostApiInteractor @Inject constructor(private val context: Context) 
         channels.forEach {
             if ((it.type == "O") or (it.type == "P")) {
                 val formattedTimestamp = sdf.format(Date(it.lastPostAt))
-                list.add(ChannelData(it.id, it.name, formattedTimestamp, false))
+                list.add(ChannelData(it.id, it.displayName, formattedTimestamp, false))
             }
         }
         return list
