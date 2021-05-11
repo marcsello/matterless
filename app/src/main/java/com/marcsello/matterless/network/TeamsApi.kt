@@ -12,5 +12,5 @@ interface TeamsApi {
         @Path("user_id") userId: String,
         @Query("page") page: Int?,
         @Query("per_page") perPage: Int?
-    ): Call<Teams>
+    ): Call<List<Teams>>
 }

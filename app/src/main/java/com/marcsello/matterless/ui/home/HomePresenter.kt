@@ -1,66 +1,81 @@
 package com.marcsello.matterless.ui.home
 
 import android.util.Log
+import com.marcsello.matterless.events.ChannelsLoadedEvent
+import com.marcsello.matterless.events.LoginResultEvent
+import com.marcsello.matterless.events.TeamsLoadedEvent
+import com.marcsello.matterless.events.UserInfoLoaded
 import com.marcsello.matterless.interactor.LocalDataInteractor
 import com.marcsello.matterless.interactor.MattermostApiInteractor
 import com.marcsello.matterless.ui.Presenter
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
+import java.util.concurrent.Executors
 import javax.inject.Inject
 
-class HomePresenter @Inject constructor(private val mattermostApiInteractor: MattermostApiInteractor, private val localDataInteractor: LocalDataInteractor) : Presenter<HomeScreen>() {
+class HomePresenter @Inject constructor(
+    private val mattermostApiInteractor: MattermostApiInteractor,
+    private val localDataInteractor: LocalDataInteractor
+) : Presenter<HomeScreen>() {
+
+    private var executor = Executors.newFixedThreadPool(1)
+
     fun changeTeam(id: String) {
         Log.println(Log.VERBOSE, "HomePresenter", "Changing team to $id")
 
         runBlocking {
-            launch {
-
-                if (id == "a") {
-                    screen?.channelsLoaded(
-                        arrayListOf(
-                            ChannelData("asd", "misc-rage", "asdasd", false),
-                            ChannelData("asd2", "misc-random", "asd2", true)
-                        ),id
-                    )
-                } else {
-                    screen?.channelsLoaded(
-                        arrayListOf(
-                            ChannelData("asd", "misc-happy", "aaaa", true),
-                            ChannelData("asd2", "kszk-general", "aaaaa", true)
-                        ),id
-                    )
-                }
-
+            launch(Dispatchers.IO) {
+                localDataInteractor.saveLastTeamId(id)
             }
-            localDataInteractor.saveLastTeamId(id)
         }
+
+        executor.execute {
+
+        }
+
     }
 
     fun loadDataOnStart() {
 
         Log.println(Log.VERBOSE, "HomePresenter", "Start loading of initial data...")
 
-        runBlocking {
-
-            launch {
-                // After loading teams, the activity should call change team,
-                // This is to ensure, that teams won't be loaded when there is no living activity that requires this
-                screen?.personalDataLoaded("Marcsello", "KSZK");
-
-                val teams = arrayListOf(TeamData("a", "Alma"), TeamData("b", "Barack"))
-
-                screen?.teamsLoaded(teams, localDataInteractor.getLastTeamId())
-
-
-            }
-
+        executor.execute {
+            mattermostApiInteractor.loadUserInfo("me")
         }
-
-
+        executor.execute {
+            mattermostApiInteractor.loadTeams("me")
+        }
 
     }
 
     fun performLogout() {
+        mattermostApiInteractor.logout()
         screen?.loggedOut()
     }
+
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onEventMainThread(event: TeamsLoadedEvent) {
+        runBlocking {
+            val last_team_id = localDataInteractor.getLastTeamId()
+            screen?.teamsLoaded(event.teams,last_team_id)
+        }
+                // After loading teams, the activity should call change team,
+                // This is to ensure, that teams won't be loaded when there is no living activity that requires this
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onEventMainThread(event: ChannelsLoadedEvent) {
+
+    }
+
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onEventMainThread(event: UserInfoLoaded) {
+        screen?.personalDataLoaded(event.nickname, event.roles)
+    }
+
 }

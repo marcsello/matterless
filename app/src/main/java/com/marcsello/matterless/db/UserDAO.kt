@@ -8,12 +8,12 @@ interface UserDAO {
     suspend fun getUsers(): List<User>
 
     @Query("SELECT * FROM users WHERE id = :id")
-    suspend fun getUserById(id:String): User
+    suspend fun getUserById(id:String): User?
 
     @Query("SELECT * FROM users WHERE first_name LIKE :name_query OR last_name LIKE :name_query OR username LIKE :name_query OR nickname LIKE :name_query")
     suspend fun searchUserByAnyName(name_query:String): List<User>
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertUsers(vararg users: User)
 
     @Update
