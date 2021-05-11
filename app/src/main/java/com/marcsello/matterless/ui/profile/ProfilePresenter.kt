@@ -4,9 +4,6 @@ import com.marcsello.matterless.events.UserInfoLoaded
 import com.marcsello.matterless.events.UserProfilePictureReady
 import com.marcsello.matterless.interactor.MattermostApiInteractor
 import com.marcsello.matterless.ui.Presenter
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import java.util.concurrent.Executors

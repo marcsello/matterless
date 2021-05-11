@@ -35,10 +35,10 @@ class MattermostApiInteractor @Inject constructor(private val context: Context) 
     private val dbInstance = AppDatabase.getInstance(context)
     private lateinit var retrofit: Retrofit
     private lateinit var token: String
-    private lateinit var me_id: String
+    private lateinit var meId: String
     private val httpClient = OkHttpClient.Builder().build()
 
-    val sdf = SimpleDateFormat("yyyy. MM. dd. hh:mm")
+    private val sdf = SimpleDateFormat("yyyy. MM. dd. hh:mm")
 
     init {
         runBlocking {
@@ -84,13 +84,13 @@ class MattermostApiInteractor @Inject constructor(private val context: Context) 
                         return@runBlocking
                     }
 
-                    me_id = response.body()?.id!!
+                    meId = response.body()?.id!!
 
                 } catch (e: Exception) {
                     Log.println(
                         Log.INFO,
                         "MattermostApiInteractor",
-                        "Couldn't autologin: " + e.toString()
+                        "Couldn't autologin: $e"
                     )
                     return@runBlocking
                 }
@@ -100,7 +100,7 @@ class MattermostApiInteractor @Inject constructor(private val context: Context) 
                     "MattermostApi",
                     "Saved token is still valid, continuing session"
                 )
-                EventBus.getDefault().post(LoginResultEvent(true, servers[0].loginId, me_id, null))
+                EventBus.getDefault().post(LoginResultEvent(true, servers[0].loginId, meId, null))
 
             }
         }
@@ -110,7 +110,7 @@ class MattermostApiInteractor @Inject constructor(private val context: Context) 
         runBlocking {
             retrofit = Retrofit.Builder()
                 .client(httpClient)
-                .baseUrl(server + "/api/v4/")
+                .baseUrl("$server/api/v4/")
                 .addConverterFactory(GsonConverterFactory.create())
                 .build()
 
@@ -118,19 +118,19 @@ class MattermostApiInteractor @Inject constructor(private val context: Context) 
 
             val call = usersApi.doLogin(LoginCredentials(username, password))
 
-            var token_to_save = ""
+            val tokenToSave: String
             try {
                 val response = call.execute()
 
                 if (response.code() != 200) {
                     EventBus.getDefault()
-                        .post(LoginResultEvent(false, username, null,"HTTP ${response.code()}"))
+                        .post(LoginResultEvent(false, username, null, "HTTP ${response.code()}"))
                     return@runBlocking
                 }
 
-                token_to_save = response.headers()["Token"]!!
-                token = "Bearer $token_to_save" // Hope it does not catch on fire
-                me_id = response.body()?.id!!
+                tokenToSave = response.headers()["Token"]!!
+                token = "Bearer $tokenToSave" // Hope it does not catch on fire
+                meId = response.body()?.id!!
 
             } catch (e: Exception) {
                 EventBus.getDefault()
@@ -138,14 +138,14 @@ class MattermostApiInteractor @Inject constructor(private val context: Context) 
                 return@runBlocking
             }
 
-            val s = Server(0, server, username, password, token_to_save, null)
+            val s = Server(0, server, username, password, tokenToSave, null)
 
             launch(Dispatchers.IO) {
                 dbInstance.serverDAO().insertServers(s)
             }
 
             Log.println(Log.INFO, "MattermostApi", "Login successful")
-            EventBus.getDefault().post(LoginResultEvent(true, username, me_id,null))
+            EventBus.getDefault().post(LoginResultEvent(true, username, meId, null))
 
         }
     }
@@ -164,14 +164,14 @@ class MattermostApiInteractor @Inject constructor(private val context: Context) 
     }
 
     private fun localResolveMe(userId: String): String {
-        if (userId == "me") {
-            return me_id
+        return if (userId == "me") {
+            meId
         } else {
-            return userId
+            userId
         }
     }
 
-    suspend fun getUserData(userId: String): User? {
+    private suspend fun getUserData(userId: String): User? {
         val userIdResolved = localResolveMe(userId)
         val user = dbInstance.userDAO().getUserById(userIdResolved)
 
@@ -499,7 +499,7 @@ class MattermostApiInteractor @Inject constructor(private val context: Context) 
     }
 
     private fun friendlyfyUserName(userId: String, nickname: String?, username: String?): String {
-        var goodName = userId;
+        var goodName = userId
 
         if (!(nickname.isNullOrEmpty())) {
             goodName = nickname
@@ -521,7 +521,7 @@ class MattermostApiInteractor @Inject constructor(private val context: Context) 
             val post = posts[it]!!
             val formattedTimestamp = sdf.format(Date(post.createAt!!))
             val userId = post.userId!!
-            var userData: User? = null
+            var userData: User? // null by default
 
             runBlocking {
                 userData = getUserData(userId)

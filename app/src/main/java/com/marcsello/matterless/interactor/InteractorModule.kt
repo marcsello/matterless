@@ -1,4 +1,4 @@
-package com.marcsello.matterless.interactor;
+package com.marcsello.matterless.interactor
 
 import android.content.Context
 import dagger.Module

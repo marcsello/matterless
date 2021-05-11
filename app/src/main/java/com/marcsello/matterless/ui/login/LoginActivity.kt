@@ -6,7 +6,6 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.marcsello.matterless.R
-import com.marcsello.matterless.db.AppDatabase
 import com.marcsello.matterless.injector
 import com.marcsello.matterless.ui.home.HomeActivity
 import kotlinx.android.synthetic.main.activity_login.*

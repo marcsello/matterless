@@ -3,12 +3,8 @@ package com.marcsello.matterless.ui.login
 import com.marcsello.matterless.events.LoginResultEvent
 import com.marcsello.matterless.interactor.MattermostApiInteractor
 import com.marcsello.matterless.ui.Presenter
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
-import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 import javax.inject.Inject
 

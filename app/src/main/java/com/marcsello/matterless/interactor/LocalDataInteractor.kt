@@ -14,10 +14,10 @@ class LocalDataInteractor @Inject constructor(private val context: Context) {
     suspend fun getLastTeamId(): String? {
         val servers = dbInstance.serverDAO().getAllServers()
 
-        if (servers.isEmpty()) {
-            return null
+        return if (servers.isEmpty()) {
+            null
         } else {
-            return servers[0].lastOpenedTeamId
+            servers[0].lastOpenedTeamId
         }
 
     }
