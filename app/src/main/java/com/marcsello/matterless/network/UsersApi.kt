@@ -16,7 +16,7 @@ interface UsersApi {
     fun getTeamMembers(
         @Header("Authorization") authorisation: String,
         @Path("team_id") teamId: String
-    ): Call<Users>
+    ): Call<List<Users>>
 
     @GET("users/{user_id}")
     fun getUserInfo(
