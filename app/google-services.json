@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "885919616082",
+    "project_id": "matterless-a3ab3",
+    "storage_bucket": "matterless-a3ab3.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:885919616082:android:6c542536b16254d017a38b",
+        "android_client_info": {
+          "package_name": "com.marcsello.matterless"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "885919616082-2d2atv3fa1idmv69s0j0t6k728sj252v.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDSTWSH0xC9SK6pArJ2Gbjc7X9f5OWmoyE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "885919616082-2d2atv3fa1idmv69s0j0t6k728sj252v.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
